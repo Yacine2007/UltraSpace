@@ -794,22 +794,6 @@ body {
         display: flex !important;
     }
 
-    /* في الهواتف: إظهار وإخفاء الهيدر بناءً على الواجهة */
-    .view.active#homeView ~ .home-header {
-        display: flex;
-    }
-
-    .view.active:not(#homeView) ~ .home-header {
-        display: none;
-    }
-
-    .view.active#homeView ~ .view-header {
-        display: none;
-    }
-
-    .view.active:not(#homeView) ~ .view-header {
-        display: flex;
-    }
 
     /* إخفاء شريط التنقل السفلي في الواجهات غير الرئيسية */
     .view.active#homeView ~ .bottom-nav {
@@ -989,7 +973,21 @@ body {
         top: 10px;
         right: 10px;
     }
+
+    .view-header .header-content {
+        padding: 0 10px;
+    }
+
+    .back-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .view-title {
+        font-size: 0.95rem;
+    }
 }
+
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
@@ -1007,4 +1005,27 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-secondary);
+}
+
+
+
+
+
+
+
+/* في الحواسيب - إظهار homeHeader دائمًا */
+@media (min-width: 1025px) {
+    .home-header {
+        display: flex !important;
+    }
+    .view-header {
+        display: none !important;
+    }
+}
+
+/* في الهواتف - التحكم عبر JavaScript فقط */
+@media (max-width: 1024px) {
+    .home-header, .view-header {
+        display: none;
+    }
 }
