@@ -188,7 +188,12 @@
 
                 <!-- AI Chat View -->
                 <div class="view" id="aiChatView">
-                    <div class="view-content">
+                    <div class="view-content" style="padding: 0; margin: 0; position: relative;">
+                        <div class="iframe-controls">
+                            <button class="fullscreen-btn" id="aiFullscreenBtn" title="Toggle Fullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
                         <div class="ai-chat-container">
                             <iframe src="Ai/AI.html" class="ai-iframe" id="aiIframe"></iframe>
                         </div>
@@ -197,7 +202,12 @@
 
                 <!-- External Page View -->
                 <div class="view" id="externalPageView">
-                    <div class="view-content">
+                    <div class="view-content" style="padding: 0; margin: 0; position: relative;">
+                        <div class="iframe-controls">
+                            <button class="fullscreen-btn" id="externalFullscreenBtn" title="Toggle Fullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
                         <div class="external-page-container">
                             <iframe src="" class="external-iframe" id="externalIframe"></iframe>
                         </div>
