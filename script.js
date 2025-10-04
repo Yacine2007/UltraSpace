@@ -29,14 +29,17 @@ const logoutBtn = document.getElementById('settingsLogoutBtn');
 const errorHomeBtn = document.getElementById('errorHomeBtn');
 const messageItems = document.querySelectorAll('.message-item');
 const externalIframe = document.getElementById('externalIframe');
+const aiIframe = document.getElementById('aiIframe');
 const bottomNav = document.getElementById('bottomNav');
 const viewTitle = document.getElementById('viewTitle');
+const aiFullscreenBtn = document.getElementById('aiFullscreenBtn');
+const externalFullscreenBtn = document.getElementById('externalFullscreenBtn');
 
 // عناوين الواجهات
 const viewTitles = {
     home: 'Home',
     notifications: 'Notifications',
-    messages: 'Messages', // تم التصحيح هنا
+    messages: 'Messages',
     settings: 'Settings',
     aiChat: 'UltraSpace AI',
     externalPage: 'Page',
@@ -53,6 +56,12 @@ function initApp() {
             setupEventListeners();
             updateHeaderVisibility();
             updateBottomNavVisibility();
+            
+            // إعداد ضبط أبعاد الـ iframe
+            setupIframeResizing();
+            setupIframeResizeHandler();
+            setupFullscreenToggle();
+            
         }, 500);
     }, 2000);
 
@@ -97,31 +106,37 @@ function switchView(viewId) {
     updateHeaderVisibility();
     updateBottomNavVisibility();
     updateViewTitle(viewId);
+    
+    // ضبط ارتفاع الـ iframe إذا كانت الواجهة تحتوي على iframe
+    if (viewId === 'aiChat' || viewId === 'externalPage') {
+        setTimeout(() => {
+            const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
+            if (activeIframe) {
+                adjustIframeHeight(activeIframe);
+            }
+        }, 100);
+    }
 }
 
-// تحديث رأس الصفحة - النسخة المصححة
+// تحديث رأس الصفحة - النسخة المحسنة
 function updateHeaderVisibility() {
     const isMobile = window.innerWidth <= 1024;
     const currentView = appState.currentView;
     
     if (isMobile) {
+        // في الهواتف:
         // homeHeader: يظهر فقط في home
+        // viewHeader: يظهر في جميع الواجهات ما عدا home
+        
         if (homeHeader) {
             homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
         }
         
-        // viewHeader: يظهر في جميع الواجهات ما عدا home
         if (viewHeader) {
-            if (currentView === 'home') {
-                // إخفاء تام في home فقط
-                viewHeader.style.display = 'none';
-            } else {
-                // إظهار في جميع الواجهات الأخرى (بما فيها messages)
-                viewHeader.style.display = 'flex';
-            }
+            viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
         }
     } else {
-        // في الحواسيب: إظهار homeHeader دائماً
+        // في الحواسيب: إظهار homeHeader دائماً وإخفاء viewHeader
         if (homeHeader) {
             homeHeader.style.display = 'flex';
         }
@@ -137,6 +152,7 @@ function updateBottomNavVisibility() {
     const currentView = appState.currentView;
     
     if (isMobile && bottomNav) {
+        // في الهواتف: إظهار الشريط السفلي فقط في الواجهة الرئيسية
         if (currentView === 'home') {
             bottomNav.classList.remove('hidden');
             bottomNav.classList.add('visible');
@@ -149,67 +165,200 @@ function updateBottomNavVisibility() {
 
 // تحديث عنوان الواجهة
 function updateViewTitle(viewId) {
-    if (viewTitle && viewTitles[viewId]) {
-        viewTitle.textContent = viewTitles[viewId];
+    if (viewTitle) {
+        viewTitle.textContent = viewTitles[viewId] || 'View';
     }
 }
 
-// العودة للخلف
+// الرجوع للخلف
 function goBack() {
     if (appState.viewHistory.length > 1) {
-        // إزالة الواجهة الحالية من السجل
-        appState.viewHistory.pop();
-        
-        // العودة للواجهة السابقة
+        appState.viewHistory.pop(); // إزالة الواجهة الحالية
         const previousView = appState.viewHistory[appState.viewHistory.length - 1];
-        
-        // تحديث حالة التطبيق أولاً
-        appState.currentView = previousView;
-        
-        // ثم تبديل الواجهة
         switchView(previousView);
     } else {
-        // إذا لم يكن هناك سجل، العودة للرئيسية
-        appState.currentView = 'home';
         switchView('home');
     }
 }
 
-// تحميل الصفحات الخارجية
+// ========== إدارة الـ iframe المحسنة ==========
+
+// ضبط ارتفاع الـ iframe تلقائياً بناءً على المحتوى
+function setupIframeResizing() {
+    const iframes = document.querySelectorAll('.ai-iframe, .external-iframe');
+    
+    iframes.forEach(iframe => {
+        // استمع لتغيرات المحتوى في الـ iframe
+        iframe.addEventListener('load', function() {
+            adjustIframeHeight(this);
+        });
+        
+        // أيضاً استمع لأخطاء التحميل
+        iframe.addEventListener('error', function() {
+            console.error('Iframe failed to load:', this.src);
+            setDefaultIframeHeight(this);
+        });
+    });
+}
+
+// ضبط ارتفاع الـ iframe
+function adjustIframeHeight(iframe) {
+    try {
+        // حاول الوصول لمحتوى الـ iframe
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        
+        if (iframeDoc && iframeDoc.body) {
+            // احسب الارتفاع المطلوب
+            const height = Math.max(
+                iframeDoc.body.scrollHeight,
+                iframeDoc.documentElement.scrollHeight,
+                iframeDoc.body.offsetHeight,
+                iframeDoc.documentElement.offsetHeight,
+                iframeDoc.body.clientHeight,
+                iframeDoc.documentElement.clientHeight
+            );
+            
+            // حدد ارتفاعاً أقصى لمنع الصفحات الطويلة جداً
+            const maxHeight = window.innerHeight - 100;
+            const finalHeight = Math.min(height, maxHeight);
+            
+            iframe.style.height = finalHeight + 'px';
+            iframe.style.minHeight = '400px'; // ارتفاع أدنى
+            
+            console.log('Iframe height adjusted to:', finalHeight);
+        }
+    } catch (error) {
+        // إذا فشل الوصول لمحتوى الـ iframe (مشكلة CORS)
+        console.warn('Cannot access iframe content:', error);
+        setDefaultIframeHeight(iframe);
+    }
+}
+
+// تعيين ارتفاع افتراضي للـ iframe
+function setDefaultIframeHeight(iframe) {
+    const viewportHeight = window.innerHeight;
+    const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
+    const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 80;
+    
+    // احسب الارتفاع المتاح
+    const availableHeight = viewportHeight - headerHeight - navHeight - 40;
+    
+    iframe.style.height = availableHeight + 'px';
+    iframe.style.minHeight = '500px';
+    
+    console.log('Default iframe height set to:', availableHeight);
+}
+
+// تحديث أبعاد الـ iframe عند تغيير حجم النافذة
+function setupIframeResizeHandler() {
+    window.addEventListener('resize', function() {
+        const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
+        if (activeIframe) {
+            setTimeout(() => {
+                adjustIframeHeight(activeIframe);
+            }, 100);
+        }
+    });
+}
+
+// وظيفة العرض الكامل للـ iframe
+function setupFullscreenToggle() {
+    const fullscreenButtons = [
+        { btn: aiFullscreenBtn, view: 'aiChatView' },
+        { btn: externalFullscreenBtn, view: 'externalPageView' }
+    ];
+    
+    fullscreenButtons.forEach(({ btn, view }) => {
+        if (btn) {
+            btn.addEventListener('click', function() {
+                const targetView = document.getElementById(view);
+                const container = targetView.querySelector('.ai-chat-container, .external-page-container');
+                const iframe = targetView.querySelector('.ai-iframe, .external-iframe');
+                
+                if (targetView.classList.contains('iframe-fullscreen')) {
+                    // الخروج من وضع العرض الكامل
+                    targetView.classList.remove('iframe-fullscreen');
+                    btn.innerHTML = '<i class="fas fa-expand"></i>';
+                    adjustIframeHeight(iframe);
+                } else {
+                    // الدخول إلى وضع العرض الكامل
+                    targetView.classList.add('iframe-fullscreen');
+                    btn.innerHTML = '<i class="fas fa-compress"></i>';
+                    iframe.style.height = '100vh';
+                }
+            });
+        }
+    });
+}
+
+// تحميل الصفحات الخارجية - نسخة محسنة
 async function loadExternalPage(url, title = 'Page') {
-    // إظهار حالة التحميل
     appState.isLoading = true;
     
     try {
-        // محاولة جلب الصفحة
         const response = await fetch(url, { method: 'HEAD' });
         
         if (!response.ok) {
             throw new Error('Page not found');
         }
         
-        // إذا كانت الصفحة موجودة، قم بتحميلها في الـ iframe
         if (externalIframe) {
+            // إعداد الـ iframe قبل التحميل
+            setupIframeForLoading(externalIframe);
+            
             externalIframe.src = url;
             viewTitles.externalPage = title;
+            
+            // إعداد الـ iframe بعد التحميل
+            externalIframe.onload = function() {
+                adjustIframeHeight(this);
+                appState.isLoading = false;
+            };
+            
+            externalIframe.onerror = function() {
+                console.error('Failed to load iframe content:', url);
+                setDefaultIframeHeight(this);
+                appState.isLoading = false;
+            };
+            
             switchView('externalPage');
         }
-        
-        // إخفاء حالة التحميل
-        appState.isLoading = false;
         
         return true;
         
     } catch (error) {
-        // إذا فشل التحميل، عرض واجهة الخطأ
         console.error('Error loading page:', error);
         showErrorView();
+        appState.isLoading = false;
         return false;
     }
 }
 
-// فتح شات AI
+// إعداد الـ iframe للتحميل
+function setupIframeForLoading(iframe) {
+    iframe.style.height = '600px'; // ارتفاع مؤقت أثناء التحميل
+    iframe.style.opacity = '0.7'; // شفافية أثناء التحميل
+    
+    // إزالة الشفافية بعد التحميل
+    setTimeout(() => {
+        iframe.style.opacity = '1';
+    }, 500);
+}
+
+// فتح شات AI - نسخة محسنة
 function openAIChat() {
+    if (aiIframe) {
+        setupIframeForLoading(aiIframe);
+        
+        aiIframe.onload = function() {
+            adjustIframeHeight(this);
+        };
+        
+        aiIframe.onerror = function() {
+            setDefaultIframeHeight(this);
+        };
+    }
+    
     loadExternalPage('Ai/AI.html', 'UltraSpace AI');
 }
 
