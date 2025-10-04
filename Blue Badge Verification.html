@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Badge Verification - UltraSpace</title>
+    <link rel="icon" type="image/png" href="logo/favicon.png">
+    <style>
+        :root {
+            --primary-blue: #0d47a1;
+            --secondary-blue: #08306b;
+            --light-blue: #1565c0;
+            --accent-blue: #bbdefb;
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --text-light: #ffffff;
+            --text-muted: #e3f2fd;
+            --text-blue: #0d47a1;
+            --text-white: #ffffff;
+            --success-green: #4caf50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-blue);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--darker-bg), var(--card-bg));
+            color: var(--text-light);
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(13, 71, 161, 0.4);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 40px;
+            width: 40px;
+            margin-right: 12px;
+            border-radius: 8px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+        
+        .tagline p {
+            color: var(--text-white);
+            font-weight: 500;
+        }
+        
+        .badge-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            flex-direction: column;
+        }
+        
+        .badge {
+            width: 140px;
+            height: 140px;
+            background-color: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 25px rgba(13, 71, 161, 0.6);
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .badge::after {
+            content: '';
+            width: 80px;
+            height: 80px;
+            background-color: var(--text-light);
+            clip-path: polygon(28% 48%, 41% 61%, 72% 30%, 80% 38%, 41% 77%, 20% 56%);
+        }
+        
+        .duration-note {
+            background-color: var(--secondary-blue);
+            color: var(--text-white);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 300px;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .hero h2 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--text-white);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            color: var(--text-muted);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        
+        .feature-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(13, 71, 161, 0.3);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(13, 71, 161, 0.4);
+            border-color: rgba(13, 71, 161, 0.5);
+        }
+        
+        .feature-card h3 {
+            color: var(--text-white);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .feature-card p {
+            color: var(--text-muted);
+        }
+        
+        .pricing {
+            background: linear-gradient(135deg, var(--card-bg), var(--darker-bg));
+            color: var(--text-white);
+            padding: 50px 0;
+            text-align: center;
+            border-radius: 10px;
+            margin: 50px 0;
+            border: 1px solid rgba(13, 71, 161, 0.4);
+            position: relative;
+        }
+        
+        .subscription-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--secondary-blue);
+            color: var(--text-white);
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .pricing h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--text-white);
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--text-white);
+        }
+        
+        .price-note {
+            font-size: 1rem;
+            opacity: 0.9;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        
+        .renewal-info {
+            background-color: rgba(13, 71, 161, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 500px;
+            border: 1px solid rgba(13, 71, 161, 0.3);
+        }
+        
+        .renewal-info p {
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-decoration: none;
+            margin: 30px 0;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(13, 71, 161, 0.5);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.7);
+        }
+        
+        .form-container {
+            display: none;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            margin: 40px 0;
+            border: 1px solid rgba(13, 71, 161, 0.4);
+        }
+        
+        .form-container h2 {
+            color: var(--text-white);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-white);
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--darker-bg);
+            border: 1px solid rgba(13, 71, 161, 0.5);
+            border-radius: 5px;
+            font-size: 1rem;
+            color: var(--text-light);
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 2px rgba(13, 71, 161, 0.4);
+        }
+        
+        .payment-options {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .payment-options h3 {
+            color: var(--text-white);
+            margin-bottom: 15px;
+        }
+        
+        .payment-method {
+            background-color: var(--darker-bg);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: 1px solid rgba(13, 71, 161, 0.3);
+            color: var(--text-white);
+        }
+        
+        .payment-method:hover {
+            background-color: rgba(13, 71, 161, 0.2);
+        }
+        
+        .payment-method.selected {
+            background-color: rgba(13, 71, 161, 0.3);
+            color: var(--text-white);
+            border-color: var(--primary-blue);
+        }
+        
+        .payment-details {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--darker-bg);
+            border-radius: 5px;
+            border: 1px solid rgba(13, 71, 161, 0.4);
+        }
+        
+        .payment-details h3 {
+            color: var(--text-white);
+            margin-bottom: 10px;
+        }
+        
+        .payment-details p {
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        
+        .payment-details strong {
+            color: var(--text-white);
+        }
+        
+        .confirmation {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            margin: 40px 0;
+            border: 1px solid rgba(13, 71, 161, 0.4);
+        }
+        
+        .confirmation h2 {
+            color: var(--success-green);
+            margin-bottom: 20px;
+        }
+        
+        .confirmation p {
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            background-color: var(--darker-bg);
+            color: var(--text-muted);
+            padding: 30px 0;
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid rgba(13, 71, 161, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .logo {
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            
+            .hero h2 {
+                font-size: 1.8rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            .price {
+                font-size: 2.5rem;
+            }
+            
+            .subscription-info {
+                position: static;
+                margin: 0 auto 20px;
+                width: fit-content;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="logo/favicon.png" alt="UltraSpace Logo" onerror="this.style.display='none'; document.querySelector('.logo-fallback').style.display='flex';">
+                    <div class="logo-fallback" style="display: none; width: 40px; height: 40px; background: var(--primary-blue); border-radius: 8px; margin-right: 12px; align-items: center; justify-content: center; color: white; font-weight: bold;">US</div>
+                    <h1>UltraSpace</h1>
+                </div>
+                <div class="tagline">
+                    <p>Premium Social Platform</p>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <section class="badge-preview">
+            <div class="badge"></div>
+            <div class="duration-note">Verification valid for 30 days • Manual renewal required</div>
+        </section>
+        
+        <section class="hero">
+            <h2>Get Verified with UltraSpace Blue Badge</h2>
+            <p>Stand out on UltraSpace with our exclusive Blue Badge verification. Show the community that you're an authentic and notable presence on our platform.</p>
+        </section>
+        
+        <section class="features">
+            <div class="feature-card">
+                <h3>Enhanced Credibility</h3>
+                <p>Build trust with your audience by displaying the official verification badge on your profile.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Increased Visibility</h3>
+                <p>Verified accounts receive priority in search results and recommendations.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Exclusive Features</h3>
+                <p>Access special features and tools available only to verified users.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Premium Support</h3>
+                <p>Receive priority customer support for any issues or inquiries.</p>
+            </div>
+        </section>
+        
+        <section class="pricing">
+            <div class="subscription-info">Monthly Plan</div>
+            <h2>Get Your Blue Badge Today</h2>
+            <div class="price">$1</div>
+            <p class="price-note">For Algerian users: 200 DA</p>
+            
+            <div class="renewal-info">
+                <p><strong>30-Day Verification Plan</strong></p>
+                <p>• Verification valid for 30 days</p>
+                <p>• Manual renewal required each month</p>
+                <p>• Pay only for active months</p>
+                <p>• No automatic charges</p>
+            </div>
+            
+            <button id="request-btn" class="cta-button">Request Verification</button>
+        </section>
+        
+        <section id="request-form" class="form-container">
+            <h2>Verification Request Form</h2>
+            <form id="verification-form">
+                <div class="form-group">
+                    <label for="fullname">Full Name</label>
+                    <input type="text" id="fullname" name="fullname" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">UltraSpace Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="country">Country</label>
+                    <select id="country" name="country" required>
+                        <option value="">Select your country</option>
+                        <option value="algeria">Algeria</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div id="payment-options" class="payment-options">
+                    <h3>Select Payment Method</h3>
+                    
+                    <div id="algerian-payment" class="payment-methods">
+                        <div class="payment-method" data-method="ccp">CCP</div>
+                        <div class="payment-method" data-method="baridimob">BaridiMob</div>
+                    </div>
+                    
+                    <div id="international-payment" class="payment-methods">
+                        <div class="payment-method" data-method="paypal">PayPal</div>
+                        <div class="payment-method" data-method="binance">Binance</div>
+                    </div>
+                    
+                    <div id="payment-details" class="payment-details">
+                        <!-- Payment details will be displayed here based on selection -->
+                    </div>
+                </div>
+                
+                <button type="submit" class="cta-button">Submit Request</button>
+            </form>
+        </section>
+        
+        <section id="confirmation" class="confirmation">
+            <h2>Request Submitted Successfully!</h2>
+            <p>We will review your application and notify you once the verification process is complete.</p>
+            <p>Your verification will be active for 30 days and can be renewed manually each month.</p>
+            <p>You should hear back from us within 3-5 business days.</p>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; <span id="current-year"></span> UltraSpace. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const requestBtn = document.getElementById('request-btn');
+            const requestForm = document.getElementById('request-form');
+            const countrySelect = document.getElementById('country');
+            const paymentOptions = document.getElementById('payment-options');
+            const algerianPayment = document.getElementById('algerian-payment');
+            const internationalPayment = document.getElementById('international-payment');
+            const paymentDetails = document.getElementById('payment-details');
+            const verificationForm = document.getElementById('verification-form');
+            const confirmation = document.getElementById('confirmation');
+            const currentYearElement = document.getElementById('current-year');
+            
+            // Set current year in footer
+            currentYearElement.textContent = new Date().getFullYear();
+            
+            // Show request form when button is clicked
+            requestBtn.addEventListener('click', function() {
+                requestForm.style.display = 'block';
+                requestForm.scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Show payment options based on country selection
+            countrySelect.addEventListener('change', function() {
+                if (this.value === 'algeria') {
+                    paymentOptions.style.display = 'block';
+                    algerianPayment.style.display = 'block';
+                    internationalPayment.style.display = 'none';
+                } else if (this.value === 'other') {
+                    paymentOptions.style.display = 'block';
+                    algerianPayment.style.display = 'none';
+                    internationalPayment.style.display = 'block';
+                } else {
+                    paymentOptions.style.display = 'none';
+                    paymentDetails.style.display = 'none';
+                }
+            });
+            
+            // Handle payment method selection
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.addEventListener('click', function() {
+                    // Remove selected class from all methods
+                    document.querySelectorAll('.payment-method').forEach(m => {
+                        m.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked method
+                    this.classList.add('selected');
+                    
+                    // Show payment details
+                    paymentDetails.style.display = 'block';
+                    
+                    // Display appropriate payment details
+                    const methodType = this.getAttribute('data-method');
+                    let detailsHTML = '';
+                    
+                    switch(methodType) {
+                        case 'ccp':
+                            detailsHTML = `
+                                <h3>CCP Payment</h3>
+                                <p>Please send 200 DA to the following CCP account:</p>
+                                <p><strong>Account Number:</strong> 123-456-789-0</p>
+                                <p><strong>Account Name:</strong> UltraSpace Verification</p>
+                                <p>After payment, please keep the receipt for your records.</p>
+                                <p><em>Manual renewal required after 30 days.</em></p>
+                            `;
+                            break;
+                        case 'baridimob':
+                            detailsHTML = `
+                                <h3>BaridiMob Payment</h3>
+                                <p>Please send 200 DA to the following BaridiMob number:</p>
+                                <p><strong>Phone Number:</strong> +213 XXX XX XX XX</p>
+                                <p>After payment, please take a screenshot of the confirmation.</p>
+                                <p><em>Manual renewal required after 30 days.</em></p>
+                            `;
+                            break;
+                        case 'paypal':
+                            detailsHTML = `
+                                <h3>PayPal Payment</h3>
+                                <p>Please send $1 to our PayPal account:</p>
+                                <p><strong>Email:</strong> payments@ultraspace.com</p>
+                                <p>Make sure to include your UltraSpace username in the payment note.</p>
+                                <p><em>Manual renewal required after 30 days.</em></p>
+                            `;
+                            break;
+                        case 'binance':
+                            detailsHTML = `
+                                <h3>Binance Payment</h3>
+                                <p>Please send $1 equivalent in crypto to our Binance wallet:</p>
+                                <p><strong>Wallet Address:</strong> 0x1a2b3c4d5e6f7g8h9i0j</p>
+                                <p>Make sure to include your UltraSpace username in the memo field.</p>
+                                <p><em>Manual renewal required after 30 days.</em></p>
+                            `;
+                            break;
+                    }
+                    
+                    paymentDetails.innerHTML = detailsHTML;
+                });
+            });
+            
+            // Handle form submission
+            verificationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // In a real application, you would send the form data to a server here
+                
+                // Hide the form and show confirmation
+                requestForm.style.display = 'none';
+                confirmation.style.display = 'block';
+                confirmation.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>

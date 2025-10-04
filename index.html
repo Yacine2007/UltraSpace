@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UltraSpace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo/favicon.png" type="png">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <img src="logo/favicon.png" alt="UltraSpace Logo" class="loading-logo">
+        <p style="position:absolute; bottom:15px; width:100%; text-align:center; font-weight:bold; font-family:'Arial Black', sans-serif; font-size:16px; color:white;">From B.Y PRO</p>
+    </div>
+
+    <!-- Main App (hidden during loading) -->
+    <div class="app-container" id="appContainer">
+        <!-- Sidebar for Desktop -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="logo/favicon.png" alt="UltraSpace Logo" class="sidebar-logo">
+                <h2>UltraSpace</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-view="home">
+                    <i class="fas fa-home"></i>
+                    <span class="nav-text">Home</span>
+                </button>
+                <button class="nav-btn" data-view="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="nav-text">Notifications</span>
+                </button>
+                <button class="nav-btn" data-view="messages">
+                    <i class="fas fa-comment"></i>
+                    <span class="nav-text">Messages</span>
+                </button>
+                <button class="nav-btn" data-view="settings">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-text">Settings</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-area">
+            <!-- Header for Home View -->
+            <header class="header home-header" id="homeHeader">
+                <div class="header-content">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search UltraSpace">
+                    </div>
+                    <div class="header-actions">
+                        <img src="https://ui-avatars.com/api/?name=User&background=3a86ff&color=fff" class="user-avatar" alt="Profile" id="profileAvatar">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Header for Other Views (Mobile) -->
+            <header class="header view-header mobile-only" id="viewHeader">
+                <div class="header-content">
+                    <button class="back-btn" id="backBtn">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="view-title" id="viewTitle">View</h2>
+                    <div class="header-spacer"></div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Home View -->
+                <div class="view active" id="homeView">
+                    <div class="view-content">
+                        <div class="welcome-section">
+                            <h1>Welcome to UltraSpace</h1>
+                            <p>Your social space to connect and share</p>
+                        </div>
+                        <div class="posts-container" id="postsContainer">
+                            <div class="empty-state">
+                                <i class="fas fa-compass"></i>
+                                <h3>Discover New Content</h3>
+                                <p>Start exploring what's happening in your network</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications View -->
+                <div class="view" id="notificationsView">
+                    <div class="view-content">
+                        <div class="empty-state">
+                            <i class="fas fa-bell"></i>
+                            <h3>No Notifications</h3>
+                            <p>When you have notifications, they'll appear here</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages View -->
+                <div class="view" id="messagesView">
+                    <div class="view-content">
+                        <div class="messages-list">
+                            <div class="message-item" data-user="ai">
+                                <div class="message-avatar">
+                                    <img src="logo/favicon.png" alt="UltraSpace AI">
+                                </div>
+                                <div class="message-info">
+                                    <div class="message-user">
+                                        <span class="message-name">UltraSpace AI</span>
+                                        <span class="verified-badge"><i class="fas fa-check-circle"></i></span>
+                                    </div>
+                                    <div class="message-preview">Hello! I'm here to help you with any questions</div>
+                                    <div class="message-time">Just now</div>
+                                </div>
+                            </div>
+                            <div class="message-item" data-user="support">
+                                <div class="message-avatar">
+                                    <img src="https://ui-avatars.com/api/?name=Support&background=8338ec&color=fff" alt="Support">
+                                </div>
+                                <div class="message-info">
+                                    <div class="message-user">
+                                        <span class="message-name">UltraSpace Support</span>
+                                        <span class="verified-badge"><i class="fas fa-check-circle"></i></span>
+                                    </div>
+                                    <div class="message-preview">Need help? Contact our support team</div>
+                                    <div class="message-time">30 minutes ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div class="view" id="settingsView">
+                    <div class="view-content">
+                        <div class="settings-container">
+                            <div class="settings-section">
+                                <h3>Account</h3>
+                                <div class="settings-item" data-page="Profile/Profile.html">
+                                    <i class="fas fa-user"></i>
+                                    <span>Edit Profile</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                                <div class="settings-item" data-page="Blue Badge Verification.html">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Blue Badge Verification</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <h3>Support</h3>
+                                <div class="settings-item" data-page="HCA.html">
+                                    <i class="fas fa-question-circle"></i>  
+                                    <span>Help Center</span>  
+                                    <i class="fas fa-chevron-right"></i>  
+                                </div>
+                                <div class="settings-item" data-page="Ai/AI.html">
+                                    <i class="fas fa-robot"></i>  
+                                    <span>UltraSpace AI</span>  
+                                    <i class="fas fa-chevron-right"></i>  
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3>Preferences</h3>
+                                <div class="settings-item">
+                                    <i class="fas fa-language"></i>
+                                    <span>Language</span>
+                                    <select id="languageSelect">
+                                        <option value="en">English</option>
+                                        <option value="ar">العربية</option>
+                                        <option value="fr">Français</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button class="logout-btn" id="settingsLogoutBtn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Chat View -->
+                <div class="view" id="aiChatView">
+                    <div class="view-content">
+                        <div class="ai-chat-container">
+                            <iframe src="Ai/AI.html" class="ai-iframe" id="aiIframe"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- External Page View -->
+                <div class="view" id="externalPageView">
+                    <div class="view-content">
+                        <div class="external-page-container">
+                            <iframe src="" class="external-iframe" id="externalIframe"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error View -->
+                <div class="view" id="errorView">
+                    <div class="view-content">
+                        <div class="error-container">
+                            <div class="error-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <h2>Page Not Available</h2>
+                            <p>We're currently experiencing issues loading this page. Our team is working to fix the problem.</p>
+                            <p>Please try again later or contact support if the issue persists.</p>
+                            <button class="home-btn" id="errorHomeBtn">Back to Home</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Bottom Navigation for Mobile -->
+            <nav class="bottom-nav" id="bottomNav">
+                <button class="nav-btn active" data-view="home">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button class="nav-btn" data-view="notifications">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="nav-btn" data-view="messages">
+                    <i class="fas fa-comment"></i>
+                </button>
+                <button class="nav-btn" data-view="settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
