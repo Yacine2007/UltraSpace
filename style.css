@@ -453,12 +453,11 @@ body {
     font-size: 0.8rem;
 }
 
-/* AI Chat View & External Page View - بدون حواف أو تباعدات */
+/* AI Chat View & External Page View - إصلاح كامل للارتفاع */
 .ai-chat-container,
 .external-page-container {
     width: 100%;
-    height: calc(100vh - 140px);
-    max-height: 80vh;
+    height: 100vh;
     border-radius: 0;
     overflow: hidden;
     background-color: var(--background-color);
@@ -467,6 +466,11 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .ai-iframe,
@@ -477,36 +481,49 @@ body {
     background-color: var(--background-color);
     display: block;
     flex: 1;
-    min-height: 500px;
+}
+
+/* إزالة جميع التباعدات والحشوات */
+.view.active#aiChatView .view-content,
+.view.active#externalPageView .view-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh !important;
+    width: 100% !important;
 }
 
 /* عناصر تحكم الـ iframe */
 .iframe-controls {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
 }
 
 .fullscreen-btn {
-    background: var(--primary-color);
+    background: rgba(58, 134, 255, 0.9);
     border: none;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: var(--transition);
-    opacity: 0.8;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .fullscreen-btn:hover {
-    background: var(--primary-dark);
+    background: var(--primary-color);
     transform: scale(1.1);
-    opacity: 1;
 }
 
 /* وضع العرض الكامل */
@@ -534,17 +551,6 @@ body {
 
 .iframe-fullscreen .fullscreen-btn {
     background: rgba(0, 0, 0, 0.7);
-}
-
-/* إزالة التباعدات من view-content للواجهات التي تحتوي على iframe */
-.view.active#aiChatView .view-content,
-.view.active#externalPageView .view-content {
-    padding: 0;
-    margin: 0;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
 }
 
 /* Settings */
@@ -817,8 +823,12 @@ body {
     /* تحسينات للعرض على الجوال */
     .ai-chat-container,
     .external-page-container {
-        height: calc(100vh - 120px);
-        max-height: 75vh;
+        height: 100vh;
+    }
+    
+    .view.active#aiChatView .view-content,
+    .view.active#externalPageView .view-content {
+        height: 100vh !important;
     }
 }
 
@@ -880,13 +890,12 @@ body {
 
     .ai-chat-container,
     .external-page-container {
-        height: calc(100vh - 110px);
-        max-height: 70vh;
+        height: 100vh;
     }
     
-    .ai-iframe,
-    .external-iframe {
-        min-height: 400px;
+    .fullscreen-btn {
+        width: 40px;
+        height: 40px;
     }
 
     .error-container {
@@ -925,11 +934,6 @@ body {
 
     .view-title {
         font-size: 1rem;
-    }
-
-    .fullscreen-btn {
-        width: 36px;
-        height: 36px;
     }
 }
 
@@ -973,23 +977,17 @@ body {
 
     .ai-chat-container,
     .external-page-container {
-        height: calc(100vh - 100px);
-        max-height: 65vh;
+        height: 100vh;
     }
     
-    .ai-iframe,
-    .external-iframe {
-        min-height: 350px;
-    }
-
     .fullscreen-btn {
-        width: 32px;
-        height: 32px;
+        width: 38px;
+        height: 38px;
     }
-
+    
     .iframe-controls {
-        top: 8px;
-        right: 8px;
+        top: 10px;
+        right: 10px;
     }
 }
 
