@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | UltraSpace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3a86ff;
+            --primary-hover: #2a75e8;
+            --background-color: #ffffff;
+            --card-bg-color: #f8f9fa;
+            --text-color: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Profile Container */
+        .profile-container {
+            max-width: 935px;
+            margin: 0 auto;
+            padding-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Cover Photo */
+        .cover-container {
+            position: relative;
+            height: 350px;
+            background-color: var(--card-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .cover-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .cover-photo:hover {
+            transform: scale(1.02);
+        }
+
+        .edit-cover {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            z-index: 2;
+        }
+
+        .edit-cover:hover {
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        /* Profile Header */
+        .profile-header {
+            padding: 0 20px;
+            position: relative;
+            margin-top: -75px;
+            animation: slideUp 0.5s ease;
+        }
+
+        .profile-info-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid var(--background-color);
+            background-color: var(--card-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .profile-picture:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-picture-edit {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            text-align: center;
+            padding: 5px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .profile-picture:hover .profile-picture-edit {
+            display: block;
+        }
+
+        .profile-details {
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-bio {
+            font-size: 16px;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            max-width: 500px;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .profile-bio:hover {
+            color: var(--primary-color);
+        }
+
+        /* Profile Actions */
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            font-size: 14px;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Dropdown Menu */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: var(--background-color);
+            min-width: 200px;
+            box-shadow: var(--shadow-md);
+            border-radius: var(--radius-sm);
+            z-index: 1;
+            overflow: hidden;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            color: var(--text-color);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Intro Section */
+        .intro-section {
+            background-color: var(--card-bg-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin: 0 20px 20px;
+            box-shadow: var(--shadow-sm);
+            animation: slideUp 0.6s ease;
+        }
+
+        .intro-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .intro-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 5px;
+            border-radius: var(--radius-sm);
+        }
+
+        .intro-item:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .intro-icon {
+            margin-right: 12px;
+            color: var(--text-secondary);
+            width: 20px;
+            text-align: center;
+        }
+
+        .intro-text {
+            flex: 1;
+        }
+
+        .edit-intro {
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 15px;
+            transition: var(--transition);
+        }
+
+        .edit-intro:hover {
+            text-decoration: underline;
+        }
+
+        /* Posts Section */
+        .posts-container {
+            padding: 0 20px;
+            animation: slideUp 0.7s ease;
+        }
+
+        .create-post {
+            background-color: var(--card-bg-color);
+            border-radius: var(--radius-md);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .post-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--card-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .post-input {
+            flex: 1;
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 15px;
+            color: var(--text-color);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .post-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(58, 134, 255, 0.2);
+        }
+
+        .post-options {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+
+        .post-option {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .post-option:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .post-option i {
+            margin-right: 8px;
+            color: var(--text-secondary);
+        }
+
+        .post-option span {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Posts Feed */
+        .posts-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post {
+            background-color: var(--card-bg-color);
+            border-radius: var(--radius-md);
+            padding: 15px;
+            box-shadow: var(--shadow-sm);
+            animation: slideUp 0.5s ease;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .post-user {
+            display: flex;
+            gap: 10px;
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--card-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .post-user-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .post-username {
+            font-weight: 600;
+        }
+
+        .post-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .post-more {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .post-content {
+            margin-bottom: 15px;
+        }
+
+        .post-text {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .post-media {
+            width: 100%;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 15px;
+            max-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .post-media img, .post-media video {
+            width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .post-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 0;
+        }
+
+        .post-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .post-action:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .post-action i {
+            margin-right: 8px;
+        }
+
+        .post-action span {
+            font-weight: 600;
+        }
+
+        .empty-posts {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .empty-posts i {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .empty-posts h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: var(--background-color);
+            border-radius: var(--radius-md);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-md);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .modal-btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .modal-btn-secondary {
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+        }
+
+        .modal-btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+
+        /* File Input */
+        .file-input-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .file-input-label {
+            display: block;
+            width: 100%;
+            padding: 40px;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .file-input-label:hover {
+            border-color: var(--primary-color);
+        }
+
+        .file-input {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .file-preview {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: var(--radius-sm);
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cover-container {
+                height: 250px;
+            }
+            
+            .profile-picture {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .profile-name {
+                font-size: 24px;
+            }
+            
+            .post-option span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Profile Container -->
+    <div class="profile-container">
+        <!-- Cover Photo -->
+        <div class="cover-container">
+            <img src="" class="cover-photo" id="coverPhotoImg">
+            <button class="edit-cover" id="editCoverBtn">
+                <i class="fas fa-camera"></i>
+                Edit Cover
+            </button>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-info-container">
+                <div class="profile-picture" id="profilePicture">
+                    <img src="" id="profilePictureImg">
+                    <div class="profile-picture-edit">Edit</div>
+                </div>
+                
+                <div class="profile-details">
+                    <h1 class="profile-name" id="profileName">Username</h1>
+                    <div class="profile-bio" id="profileBio">This is my bio. Click to edit.</div>
+                    
+                    <div class="profile-actions">
+                        <button class="action-btn btn-primary" id="addFriendBtn">
+                            <i class="fas fa-user-plus"></i>
+                            Add Friend
+                        </button>
+                        
+                        <div class="dropdown">
+                            <button class="action-btn btn-secondary">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <div class="dropdown-content">
+                                <a href="#" class="dropdown-item" id="shareProfileBtn">
+                                    <i class="fas fa-share"></i>
+                                    Share Profile
+                                </a>
+                                <a href="#" class="dropdown-item" id="blockUserBtn">
+                                    <i class="fas fa-ban"></i>
+                                    Block User
+                                </a>
+                                <a href="#" class="dropdown-item" id="reportProfileBtn">
+                                    <i class="fas fa-flag"></i>
+                                    Report Profile
+                                </a>
+                                <a href="#" class="dropdown-item" id="unfriendBtn" style="display: none;">
+                                    <i class="fas fa-user-minus"></i>
+                                    Unfriend
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Intro Section -->
+        <div class="intro-section">
+            <h2 class="intro-title">Intro</h2>
+            
+            <div class="intro-item" id="editWork">
+                <div class="intro-icon"><i class="fas fa-briefcase"></i></div>
+                <div class="intro-text" id="workInfo">Add your workplace</div>
+            </div>
+            
+            <div class="intro-item" id="editEducation">
+                <div class="intro-icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="intro-text" id="educationInfo">Add your education</div>
+            </div>
+            
+            <div class="intro-item" id="editLiving">
+                <div class="intro-icon"><i class="fas fa-home"></i></div>
+                <div class="intro-text" id="livingInfo">Add your current city</div>
+            </div>
+            
+            <div class="intro-item" id="editHometown">
+                <div class="intro-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="intro-text" id="hometownInfo">Add your hometown</div>
+            </div>
+            
+            <div class="edit-intro" id="editIntroBtn">Edit Details</div>
+        </div>
+
+        <!-- Posts Section -->
+        <div class="posts-container">
+            <div class="create-post">
+                <div class="post-input-container">
+                    <div class="post-avatar" id="currentUserAvatar">
+                        <img src="" id="currentUserAvatarImg">
+                    </div>
+                    <input type="text" class="post-input" placeholder="What's on your mind?" id="postInput">
+                </div>
+                
+                <div class="post-options">
+                    <div class="post-option" id="photoOption">
+                        <i class="fas fa-image"></i>
+                        <span>Photo</span>
+                    </div>
+                    <div class="post-option" id="videoOption">
+                        <i class="fas fa-video"></i>
+                        <span>Video</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="posts-feed" id="postsFeed">
+                <!-- Posts will be loaded here -->
+            </div>
+            
+            <div class="empty-posts" id="emptyPosts">
+                <i class="fas fa-newspaper"></i>
+                <h3>No Posts Yet</h3>
+                <p>When you create posts, they'll appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Cover Modal -->
+    <div class="modal" id="coverModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Update Cover Photo</div>
+                <button class="close-modal" id="closeCoverModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="file-input-container">
+                    <label for="coverFileInput" class="file-input-label">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 40px; margin-bottom: 10px; color: var(--text-secondary);"></i>
+                        <div>Click to upload a new cover photo</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">Recommended size: 1200×400 pixels</div>
+                    </label>
+                    <input type="file" id="coverFileInput" class="file-input" accept="image/*">
+                    <img id="coverPreview" class="file-preview">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelCoverBtn">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveCoverBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Picture Modal -->
+    <div class="modal" id="profilePicModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Update Profile Picture</div>
+                <button class="close-modal" id="closeProfilePicModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="file-input-container">
+                    <label for="profilePicFileInput" class="file-input-label">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 40px; margin-bottom: 10px; color: var(--text-secondary);"></i>
+                        <div>Click to upload a new profile picture</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">Recommended size: 400×400 pixels</div>
+                    </label>
+                    <input type="file" id="profilePicFileInput" class="file-input" accept="image/*">
+                    <img id="profilePicPreview" class="file-preview">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelProfilePicBtn">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveProfilePicBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bio Modal -->
+    <div class="modal" id="bioModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Edit Bio</div>
+                <button class="close-modal" id="closeBioModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <textarea class="form-textarea" id="bioTextarea" placeholder="Tell people about yourself"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelBioBtn">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveBioBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Intro Modal -->
+    <div class="modal" id="introModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Edit Details</div>
+                <button class="close-modal" id="closeIntroModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Workplace</label>
+                    <input type="text" class="form-input" id="workInput" placeholder="Where do you work?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Education</label>
+                    <input type="text" class="form-input" id="educationInput" placeholder="Where did you study?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Current City</label>
+                    <input type="text" class="form-input" id="cityInput" placeholder="Where do you live now?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hometown</label>
+                    <input type="text" class="form-input" id="hometownInput" placeholder="Where are you from?">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelIntroBtn">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveIntroBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div class="modal" id="postModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Create Post</div>
+                <button class="close-modal" id="closePostModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="post-input-container">
+                    <div class="post-avatar">
+                        <img src="" id="modalUserAvatarImg">
+                    </div>
+                    <textarea class="post-input" id="postTextarea" placeholder="What's on your mind?" style="height: auto;"></textarea>
+                </div>
+                
+                <div class="file-input-container" id="mediaInputContainer" style="display: none;">
+                    <img id="postImagePreview" class="file-preview">
+                    <video id="postVideoPreview" class="file-preview" controls></video>
+                    <button class="modal-btn modal-btn-secondary" id="removeMediaBtn" style="margin-top: 10px; display: none;">
+                        <i class="fas fa-times"></i> Remove Media
+                    </button>
+                </div>
+                
+                <div class="post-options" style="margin-top: 15px;">
+                    <div class="post-option" id="addPhotoModalBtn">
+                        <i class="fas fa-image"></i>
+                        <span>Photo</span>
+                    </div>
+                    <div class="post-option" id="addVideoModalBtn">
+                        <i class="fas fa-video"></i>
+                        <span>Video</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelPostBtn">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="publishPostBtn">Post</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const profileName = document.getElementById('profileName');
+        const profileBio = document.getElementById('profileBio');
+        const profilePicture = document.getElementById('profilePicture');
+        const profilePictureImg = document.getElementById('profilePictureImg');
+        const coverPhotoImg = document.getElementById('coverPhotoImg');
+        const currentUserAvatarImg = document.getElementById('currentUserAvatarImg');
+        const modalUserAvatarImg = document.getElementById('modalUserAvatarImg');
+        const addFriendBtn = document.getElementById('addFriendBtn');
+        const unfriendBtn = document.getElementById('unfriendBtn');
+        const shareProfileBtn = document.getElementById('shareProfileBtn');
+        const blockUserBtn = document.getElementById('blockUserBtn');
+        const reportProfileBtn = document.getElementById('reportProfileBtn');
+        const editCoverBtn = document.getElementById('editCoverBtn');
+        const postInput = document.getElementById('postInput');
+        const photoOption = document.getElementById('photoOption');
+        const videoOption = document.getElementById('videoOption');
+        const postsFeed = document.getElementById('postsFeed');
+        const emptyPosts = document.getElementById('emptyPosts');
+        const editIntroBtn = document.getElementById('editIntroBtn');
+        const editWork = document.getElementById('editWork');
+        const editEducation = document.getElementById('editEducation');
+        const editLiving = document.getElementById('editLiving');
+        const editHometown = document.getElementById('editHometown');
+        const workInfo = document.getElementById('workInfo');
+        const educationInfo = document.getElementById('educationInfo');
+        const livingInfo = document.getElementById('livingInfo');
+        const hometownInfo = document.getElementById('hometownInfo');
+
+        // Modal Elements
+        const coverModal = document.getElementById('coverModal');
+        const closeCoverModal = document.getElementById('closeCoverModal');
+        const coverFileInput = document.getElementById('coverFileInput');
+        const coverPreview = document.getElementById('coverPreview');
+        const cancelCoverBtn = document.getElementById('cancelCoverBtn');
+        const saveCoverBtn = document.getElementById('saveCoverBtn');
+
+        const profilePicModal = document.getElementById('profilePicModal');
+        const closeProfilePicModal = document.getElementById('closeProfilePicModal');
+        const profilePicFileInput = document.getElementById('profilePicFileInput');
+        const profilePicPreview = document.getElementById('profilePicPreview');
+        const cancelProfilePicBtn = document.getElementById('cancelProfilePicBtn');
+        const saveProfilePicBtn = document.getElementById('saveProfilePicBtn');
+
+        const bioModal = document.getElementById('bioModal');
+        const closeBioModal = document.getElementById('closeBioModal');
+        const bioTextarea = document.getElementById('bioTextarea');
+        const cancelBioBtn = document.getElementById('cancelBioBtn');
+        const saveBioBtn = document.getElementById('saveBioBtn');
+
+        const introModal = document.getElementById('introModal');
+        const closeIntroModal = document.getElementById('closeIntroModal');
+        const workInput = document.getElementById('workInput');
+        const educationInput = document.getElementById('educationInput');
+        const cityInput = document.getElementById('cityInput');
+        const hometownInput = document.getElementById('hometownInput');
+        const cancelIntroBtn = document.getElementById('cancelIntroBtn');
+        const saveIntroBtn = document.getElementById('saveIntroBtn');
+
+        const postModal = document.getElementById('postModal');
+        const closePostModal = document.getElementById('closePostModal');
+        const postTextarea = document.getElementById('postTextarea');
+        const mediaInputContainer = document.getElementById('mediaInputContainer');
+        const postImagePreview = document.getElementById('postImagePreview');
+        const postVideoPreview = document.getElementById('postVideoPreview');
+        const removeMediaBtn = document.getElementById('removeMediaBtn');
+        const addPhotoModalBtn = document.getElementById('addPhotoModalBtn');
+        const addVideoModalBtn = document.getElementById('addVideoModalBtn');
+        const cancelPostBtn = document.getElementById('cancelPostBtn');
+        const publishPostBtn = document.getElementById('publishPostBtn');
+
+        // User Data
+        let userData = {
+            id: 1,
+            name: "John Doe",
+            bio: "This is my bio. Click to edit.",
+            profilePhoto: "",
+            coverPhoto: "",
+            isFriend: false,
+            details: {
+                work: "",
+                education: "",
+                currentCity: "",
+                hometown: ""
+            },
+            posts: []
+        };
+
+        // Post Data
+        let newPost = {
+            text: "",
+            media: null,
+            mediaType: null
+        };
+
+        // Initialize Profile
+        function initProfile() {
+            // Set user data
+            profileName.textContent = userData.name;
+            profileBio.textContent = userData.bio;
+            
+            // Set profile picture
+            if (userData.profilePhoto) {
+                profilePictureImg.src = userData.profilePhoto;
+                currentUserAvatarImg.src = userData.profilePhoto;
+                modalUserAvatarImg.src = userData.profilePhoto;
+                profilePicture.innerHTML = '<img src="' + userData.profilePhoto + '" id="profilePictureImg"><div class="profile-picture-edit">Edit</div>';
+            }
+            
+            // Set cover photo
+            if (userData.coverPhoto) {
+                coverPhotoImg.src = userData.coverPhoto;
+            }
+            
+            // Set intro details
+            workInfo.textContent = userData.details.work || "Add your workplace";
+            educationInfo.textContent = userData.details.education || "Add your education";
+            livingInfo.textContent = userData.details.currentCity || "Add your current city";
+            hometownInfo.textContent = userData.details.hometown || "Add your hometown";
+            
+            // Update friend status
+            updateFriendStatus();
+            
+            // Load posts
+            loadPosts();
+        }
+
+        // Update Friend Status
+        function updateFriendStatus() {
+            if (userData.isFriend) {
+                addFriendBtn.style.display = 'none';
+                unfriendBtn.style.display = 'flex';
+            } else {
+                addFriendBtn.style.display = 'flex';
+                unfriendBtn.style.display = 'none';
+            }
+        }
+
+        // Load Posts
+        function loadPosts() {
+            postsFeed.innerHTML = '';
+            
+            if (userData.posts.length === 0) {
+                emptyPosts.style.display = 'block';
+                return;
+            }
+            
+            emptyPosts.style.display = 'none';
+            
+            userData.posts.forEach(post => {
+                const postElement = createPostElement(post);
+                postsFeed.appendChild(postElement);
+            });
+        }
+
+        // Create Post Element
+        function createPostElement(post) {
+            const postElement = document.createElement('div');
+            postElement.className = 'post';
+            
+            // Format date
+            const postDate = new Date(post.timestamp);
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const formattedDate = postDate.toLocaleDateString('en-US', options);
+            
+            postElement.innerHTML = `
+                <div class="post-header">
+                    <div class="post-user">
+                        <div class="post-avatar">
+                            <img src="${userData.profilePhoto || ''}">
+                        </div>
+                        <div class="post-user-info">
+                            <div class="post-username">${userData.name}</div>
+                            <div class="post-time">${formattedDate}</div>
+                        </div>
+                    </div>
+                    <div class="post-more">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </div>
+                </div>
+                <div class="post-content">
+                    <div class="post-text">${post.text}</div>
+                    ${post.media ? `
+                        <div class="post-media">
+                            ${post.mediaType === 'image' ? 
+                                `<img src="${post.media}">` : 
+                                `<video src="${post.media}" controls></video>`}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="
