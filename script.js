@@ -32,8 +32,6 @@ const externalIframe = document.getElementById('externalIframe');
 const aiIframe = document.getElementById('aiIframe');
 const bottomNav = document.getElementById('bottomNav');
 const viewTitle = document.getElementById('viewTitle');
-const aiFullscreenBtn = document.getElementById('aiFullscreenBtn');
-const externalFullscreenBtn = document.getElementById('externalFullscreenBtn');
 
 // عناوين الواجهات
 const viewTitles = {
@@ -60,7 +58,6 @@ function initApp() {
             // إعداد ضبط أبعاد الـ iframe
             setupIframeResizing();
             setupIframeResizeHandler();
-            setupFullscreenToggle();
             
         }, 500);
     }, 2000);
@@ -78,44 +75,54 @@ function applyLanguage() {
     }
 }
 
-// تبديل الواجهة
+// تبديل الواجهة - تم التحديث مع الأنيميشن
 function switchView(viewId) {
-    // إخفاء جميع الواجهات
-    Object.values(views).forEach(view => {
-        if (view) view.classList.remove('active');
-    });
+    if (appState.currentView === viewId) return;
     
-    // إظهار الواجهة المحددة
-    if (views[viewId]) {
-        views[viewId].classList.add('active');
-        appState.currentView = viewId;
-        
-        // تحديث السجل - فقط إذا كانت واجهة مختلفة
-        const lastView = appState.viewHistory[appState.viewHistory.length - 1];
-        if (lastView !== viewId) {
-            appState.viewHistory.push(viewId);
-        }
-    }
+    const currentActiveView = document.querySelector('.view.active');
     
-    // تحديث أزرار التنقل
-    navButtons.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.view === viewId);
-    });
-    
-    // تحديث رأس الصفحة والشريط السفلي
-    updateHeaderVisibility();
-    updateBottomNavVisibility();
-    updateViewTitle(viewId);
-    
-    // ضبط ارتفاع الـ iframe إذا كانت الواجهة تحتوي على iframe
-    if (viewId === 'aiChat' || viewId === 'externalPage') {
+    // إخفاء الواجهة الحالية مع أنيميشن
+    if (currentActiveView) {
+        currentActiveView.style.animation = 'fadeOut 0.2s ease';
         setTimeout(() => {
-            const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
-            if (activeIframe) {
-                adjustIframeHeight(activeIframe);
-            }
-        }, 100);
+            currentActiveView.classList.remove('active');
+            currentActiveView.style.animation = '';
+        }, 150);
     }
+    
+    // إظهار الواجهة الجديدة
+    setTimeout(() => {
+        if (views[viewId]) {
+            views[viewId].classList.add('active');
+            appState.currentView = viewId;
+            
+            // تحديث السجل - فقط إذا كانت واجهة مختلفة
+            const lastView = appState.viewHistory[appState.viewHistory.length - 1];
+            if (lastView !== viewId) {
+                appState.viewHistory.push(viewId);
+            }
+        }
+        
+        // تحديث أزرار التنقل
+        navButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === viewId);
+        });
+        
+        // تحديث رأس الصفحة والشريط السفلي
+        updateHeaderVisibility();
+        updateBottomNavVisibility();
+        updateViewTitle(viewId);
+        
+        // ضبط ارتفاع الـ iframe إذا كانت الواجهة تحتوي على iframe
+        if (viewId === 'aiChat' || viewId === 'externalPage') {
+            setTimeout(() => {
+                const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
+                if (activeIframe) {
+                    adjustIframeHeight(activeIframe);
+                }
+            }, 100);
+        }
+    }, 150);
 }
 
 // تحديث رأس الصفحة - النسخة المحسنة
@@ -309,55 +316,15 @@ function setDefaultIframeHeight(iframe) {
 
 // تحديث أبعاد الـ iframe عند تغيير حجم النافذة
 function setupIframeResizeHandler() {
+    let resizeTimeout;
     window.addEventListener('resize', function() {
-        const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
-        if (activeIframe) {
-            setTimeout(() => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
+            if (activeIframe) {
                 adjustIframeHeight(activeIframe);
-            }, 100);
-        }
-    });
-}
-
-// وظيفة العرض الكامل للـ iframe
-function setupFullscreenToggle() {
-    const isMobile = window.innerWidth <= 1024;
-    
-    // في الحواسيب: إخفاء أزرار fullscreen
-    if (!isMobile) {
-        const fullscreenButtons = document.querySelectorAll('.fullscreen-btn');
-        fullscreenButtons.forEach(btn => {
-            if (btn) btn.style.display = 'none';
-        });
-        return;
-    }
-    
-    // في الهواتف: إبقاء أزرار fullscreen
-    const fullscreenButtons = [
-        { btn: aiFullscreenBtn, view: 'aiChatView' },
-        { btn: externalFullscreenBtn, view: 'externalPageView' }
-    ];
-    
-    fullscreenButtons.forEach(({ btn, view }) => {
-        if (btn) {
-            btn.addEventListener('click', function() {
-                const targetView = document.getElementById(view);
-                const container = targetView.querySelector('.ai-chat-container, .external-page-container');
-                const iframe = targetView.querySelector('.ai-iframe, .external-iframe');
-                
-                if (targetView.classList.contains('iframe-fullscreen')) {
-                    // الخروج من وضع العرض الكامل
-                    targetView.classList.remove('iframe-fullscreen');
-                    btn.innerHTML = '<i class="fas fa-expand"></i>';
-                    adjustIframeHeight(iframe);
-                } else {
-                    // الدخول إلى وضع العرض الكامل
-                    targetView.classList.add('iframe-fullscreen');
-                    btn.innerHTML = '<i class="fas fa-compress"></i>';
-                    iframe.style.height = '100vh';
-                }
-            });
-        }
+            }
+        }, 250);
     });
 }
 
@@ -457,7 +424,8 @@ function showErrorView() {
 function setupEventListeners() {
     // التنقل بين الواجهات
     navButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
             const viewId = btn.dataset.view;
             switchView(viewId);
         });
@@ -533,10 +501,13 @@ function setupEventListeners() {
     });
     
     // تحديث الرأس والشريط السفلي عند تغيير حجم النافذة
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-        updateHeaderVisibility();
-        updateBottomNavVisibility();
-        setupFullscreenToggle(); // تحديث حالة أزرار fullscreen
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            updateHeaderVisibility();
+            updateBottomNavVisibility();
+        }, 250);
     });
     
     // حل نهائي: مراقبة وإصلاح أي مشاكل في الـ headers
@@ -545,6 +516,7 @@ function setupEventListeners() {
         const isMobile = window.innerWidth <= 1024;
         
         // إصلاح homeHeader
+        const homeHeader = document.getElementById('homeHeader');
         if (homeHeader) {
             if (isMobile) {
                 if (currentView === 'home') {
@@ -564,6 +536,7 @@ function setupEventListeners() {
         }
         
         // إصلاح viewHeader - يظهر في جميع الواجهات ما عدا home
+        const viewHeader = document.getElementById('viewHeader');
         if (viewHeader) {
             if (isMobile) {
                 if (currentView === 'home') {
@@ -596,9 +569,25 @@ function setupEventListeners() {
             e.preventDefault();
         }
     }, { passive: false });
+    
+    // تحسين تجربة المستخدم على الهواتف
+    document.addEventListener('touchmove', function(e) {
+        if (e.target.classList.contains('nav-btn') || 
+            e.target.classList.contains('back-btn')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 }
 
 // بدء التطبيق عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', initApp);
-// فرض تحديث الهيدر مباشرة
-updateHeaderVisibility();
+
+// إضافة أنيميشن fadeOut لـ CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-10px); }
+    }
+`;
+document.head.appendChild(style);
