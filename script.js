@@ -120,29 +120,87 @@ function switchView(viewId) {
 
 // تحديث رأس الصفحة - النسخة المحسنة
 function updateHeaderVisibility() {
-    const isMobile = window.innerWidth <= 1024;
     const currentView = appState.currentView;
+    const mainArea = document.querySelector('.main-area');
     
-    if (isMobile) {
-        // في الهواتف:
-        // homeHeader: يظهر فقط في home
-        // viewHeader: يظهر في جميع الواجهات ما عدا home
+    // احذف كلا الهيدرين أولاً لضمان بداية نظيفة
+    const existingHomeHeader = document.getElementById('homeHeader');
+    const existingViewHeader = document.getElementById('viewHeader');
+    
+    if (existingHomeHeader) {
+        existingHomeHeader.remove();
+    }
+    if (existingViewHeader) {
+        existingViewHeader.remove();
+    }
+    
+    if (currentView === 'home') {
+        // في الواجهة الرئيسية: أضف homeHeader فقط
+        const homeHeaderHTML = `
+            <header class="header home-header" id="homeHeader">
+                <div class="header-content">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search UltraSpace">
+                    </div>
+                    <div class="header-actions">
+                        <img src="https://ui-avatars.com/api/?name=User&background=3a86ff&color=fff" class="user-avatar" alt="Profile" id="profileAvatar">
+                    </div>
+                </div>
+            </header>
+        `;
+        mainArea.insertAdjacentHTML('afterbegin', homeHeaderHTML);
         
-        if (homeHeader) {
-            homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
+        // أعد إضافة event listeners
+        const profileAvatar = document.getElementById('profileAvatar');
+        if (profileAvatar) {
+            profileAvatar.addEventListener('click', openProfile);
         }
         
-        if (viewHeader) {
-            viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
-        }
     } else {
-        // في الحواسيب: إظهار homeHeader دائماً وإخفاء viewHeader
-        if (homeHeader) {
-            homeHeader.style.display = 'flex';
+        // في جميع الواجهات الأخرى: أضف viewHeader فقط
+        const viewHeaderHTML = `
+            <header class="header view-header mobile-only" id="viewHeader">
+                <div class="header-content">
+                    <button class="back-btn" id="backBtn">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="view-title" id="viewTitle">${viewTitles[currentView] || 'View'}</h1>
+                    <div class="header-spacer"></div>
+                </div>
+            </header>
+        `;
+        mainArea.insertAdjacentHTML('afterbegin', viewHeaderHTML);
+        
+        // أعد إضافة event listener
+        const backBtn = document.getElementById('backBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', goBack);
         }
-        if (viewHeader) {
-            viewHeader.style.display = 'none';
+        
+        // تحديث العنوان
+        const viewTitle = document.getElementById('viewTitle');
+        if (viewTitle) {
+            viewTitle.textContent = viewTitles[currentView] || 'View';
         }
+    }
+    
+    // تأكيد إظهار/إخفاء الهيدر المناسب
+    forceHeaderVisibility();
+}
+
+// وظيفة إضافية لتأكيد إظهار/إخفاء الهيدر المناسب
+function forceHeaderVisibility() {
+    const currentView = appState.currentView;
+    const homeHeader = document.getElementById('homeHeader');
+    const viewHeader = document.getElementById('viewHeader');
+    
+    if (homeHeader) {
+        homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
+    }
+    
+    if (viewHeader) {
+        viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
     }
 }
 
@@ -263,6 +321,18 @@ function setupIframeResizeHandler() {
 
 // وظيفة العرض الكامل للـ iframe
 function setupFullscreenToggle() {
+    const isMobile = window.innerWidth <= 1024;
+    
+    // في الحواسيب: إخفاء أزرار fullscreen
+    if (!isMobile) {
+        const fullscreenButtons = document.querySelectorAll('.fullscreen-btn');
+        fullscreenButtons.forEach(btn => {
+            if (btn) btn.style.display = 'none';
+        });
+        return;
+    }
+    
+    // في الهواتف: إبقاء أزرار fullscreen
     const fullscreenButtons = [
         { btn: aiFullscreenBtn, view: 'aiChatView' },
         { btn: externalFullscreenBtn, view: 'externalPageView' }
@@ -466,34 +536,48 @@ function setupEventListeners() {
     window.addEventListener('resize', () => {
         updateHeaderVisibility();
         updateBottomNavVisibility();
+        setupFullscreenToggle(); // تحديث حالة أزرار fullscreen
     });
     
     // حل نهائي: مراقبة وإصلاح أي مشاكل في الـ headers
     const headerFixInterval = setInterval(() => {
         const currentView = appState.currentView;
+        const isMobile = window.innerWidth <= 1024;
         
         // إصلاح homeHeader
         if (homeHeader) {
-            if (currentView === 'home') {
-                if (homeHeader.style.display !== 'flex') {
-                    homeHeader.style.display = 'flex';
+            if (isMobile) {
+                if (currentView === 'home') {
+                    if (homeHeader.style.display !== 'flex') {
+                        homeHeader.style.display = 'flex';
+                    }
+                } else {
+                    if (homeHeader.style.display !== 'none') {
+                        homeHeader.style.display = 'none';
+                    }
                 }
             } else {
-                if (homeHeader.style.display !== 'none') {
-                    homeHeader.style.display = 'none';
+                if (homeHeader.style.display !== 'flex') {
+                    homeHeader.style.display = 'flex';
                 }
             }
         }
         
         // إصلاح viewHeader - يظهر في جميع الواجهات ما عدا home
         if (viewHeader) {
-            if (currentView === 'home') {
-                if (viewHeader.style.display !== 'none') {
-                    viewHeader.style.display = 'none';
+            if (isMobile) {
+                if (currentView === 'home') {
+                    if (viewHeader.style.display !== 'none') {
+                        viewHeader.style.display = 'none';
+                    }
+                } else {
+                    if (viewHeader.style.display !== 'flex') {
+                        viewHeader.style.display = 'flex';
+                    }
                 }
             } else {
-                if (viewHeader.style.display !== 'flex') {
-                    viewHeader.style.display = 'flex';
+                if (viewHeader.style.display !== 'none') {
+                    viewHeader.style.display = 'none';
                 }
             }
         }
@@ -516,3 +600,5 @@ function setupEventListeners() {
 
 // بدء التطبيق عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', initApp);
+// فرض تحديث الهيدر مباشرة
+updateHeaderVisibility();
