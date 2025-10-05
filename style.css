@@ -30,6 +30,11 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background-color: var(--background-color);
@@ -73,10 +78,10 @@ body {
 /* Main App Container */
 .app-container {
     display: none;
-    max-width: 100%;
+    width: 100%;
+    height: 100vh;
     margin: 0 auto;
     background-color: var(--background-color);
-    min-height: 100vh;
 }
 
 /* Sidebar for Desktop - تم التحديث */
@@ -160,7 +165,7 @@ body {
 /* Main Area */
 .main-area {
     margin-left: var(--sidebar-width);
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     transition: margin-left 0.3s ease;
@@ -175,6 +180,7 @@ body {
     z-index: 90;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    flex-shrink: 0;
 }
 
 /* Home Header */
@@ -320,6 +326,7 @@ body {
     flex: 1;
     position: relative;
     overflow: hidden;
+    height: calc(100vh - var(--header-height));
 }
 
 /* Views */
@@ -345,7 +352,8 @@ body {
 
 .view-content {
     padding: 20px;
-    min-height: calc(100vh - var(--header-height));
+    height: 100%;
+    overflow-y: auto;
 }
 
 /* Welcome Section - تم التحديث */
@@ -501,7 +509,6 @@ body {
     background-color: var(--background-color);
     display: block;
     flex: 1;
-    min-height: 600px;
 }
 
 /* إصلاح كامل للمحتوى في واجهات الـ iframe */
@@ -524,19 +531,17 @@ body {
 @media (max-width: 1024px) {
     .ai-chat-container,
     .external-page-container {
-        height: calc(100vh - var(--header-height) - var(--nav-height)) !important;
-        min-height: 500px;
+        height: 100% !important;
     }
     
     .ai-iframe,
     .external-iframe {
         height: 100% !important;
-        min-height: 500px;
     }
     
     .view.active#aiChatView .view-content,
     .view.active#externalPageView .view-content {
-        height: calc(100vh - var(--header-height) - var(--nav-height)) !important;
+        height: 100% !important;
     }
 }
 
@@ -544,7 +549,7 @@ body {
 @media (min-width: 1025px) {
     .ai-chat-container,
     .external-page-container {
-        height: calc(100vh - var(--header-height)) !important;
+        height: 100% !important;
     }
     
     .ai-iframe,
@@ -735,6 +740,7 @@ body {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
 }
 
 .bottom-nav.visible {
@@ -815,6 +821,11 @@ body {
 
     .main-area {
         margin-left: 0;
+        height: 100vh;
+    }
+
+    .main-content {
+        height: calc(100vh - var(--header-height) - var(--nav-height));
     }
 
     .bottom-nav {
@@ -826,14 +837,19 @@ body {
     }
 
     /* إصلاحات إضافية للهواتف */
+    .view.active#aiChatView,
+    .view.active#externalPageView {
+        height: calc(100vh - var(--header-height) - var(--nav-height));
+    }
+    
     .ai-chat-container,
     .external-page-container {
-        height: calc(100vh - 60px - 70px) !important; /* ارتفاع الشاشة - الهيدر - الناف */
+        height: 100% !important;
     }
     
     .view.active#aiChatView .view-content,
     .view.active#externalPageView .view-content {
-        height: calc(100vh - 60px - 70px) !important;
+        height: 100% !important;
     }
 }
 
@@ -1026,9 +1042,8 @@ body {
     }
     
     /* إصلاح الـ iframe في الحواسيب */
-    .ai-chat-container,
-    .external-page-container {
-        height: calc(100vh - var(--header-height)) !important;
+    .main-content {
+        height: calc(100vh - var(--header-height));
     }
 }
 
@@ -1036,6 +1051,10 @@ body {
 @media (max-width: 1024px) {
     .home-header, .view-header {
         display: none;
+    }
+    
+    .main-content {
+        height: calc(100vh - 60px - 70px);
     }
 }
 
