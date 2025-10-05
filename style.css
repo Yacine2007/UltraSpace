@@ -33,6 +33,7 @@
 html, body {
     height: 100%;
     width: 100%;
+    overflow: hidden;
 }
 
 body {
@@ -40,7 +41,6 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
-    overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -82,6 +82,11 @@ body {
     height: 100vh;
     margin: 0 auto;
     background-color: var(--background-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 /* Sidebar for Desktop - تم التحديث */
@@ -90,7 +95,7 @@ body {
     top: 0;
     left: 0;
     width: var(--sidebar-width);
-    height: 100%;
+    height: 100vh;
     background-color: var(--surface-color);
     border-right: 1px solid var(--border-color);
     z-index: 100;
@@ -169,6 +174,7 @@ body {
     display: flex;
     flex-direction: column;
     transition: margin-left 0.3s ease;
+    position: relative;
 }
 
 /* Header - تم التحديث */
@@ -181,6 +187,7 @@ body {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     flex-shrink: 0;
+    width: 100%;
 }
 
 /* Home Header */
@@ -188,6 +195,7 @@ body {
     height: var(--header-height);
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .home-header .header-content {
@@ -209,6 +217,7 @@ body {
     height: 60px;
     display: none;
     align-items: center;
+    width: 100%;
 }
 
 .view-header .header-content {
@@ -326,6 +335,7 @@ body {
     flex: 1;
     position: relative;
     overflow: hidden;
+    width: 100%;
     height: calc(100vh - var(--header-height));
 }
 
@@ -482,7 +492,7 @@ body {
     font-weight: 500;
 }
 
-/* ========== AI Chat View & External Page View - إصلاح كامل ========== */
+/* ========== AI Chat View & External Page View - إصلاح كامل وجذري ========== */
 
 /* الحاوية الرئيسية للـ iframe */
 .ai-chat-container,
@@ -497,10 +507,14 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
-/* الـ iframe نفسه */
+/* الـ iframe نفسه - الإصلاح النهائي */
 .ai-iframe,
 .external-iframe {
     width: 100%;
@@ -509,9 +523,29 @@ body {
     background-color: var(--background-color);
     display: block;
     flex: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 /* إصلاح كامل للمحتوى في واجهات الـ iframe */
+.view.active#aiChatView,
+.view.active#externalPageView {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.view.active#aiChatView.active,
+.view.active#externalPageView.active {
+    display: block;
+}
+
 .view.active#aiChatView .view-content,
 .view.active#externalPageView .view-content {
     padding: 0 !important;
@@ -525,37 +559,6 @@ body {
     width: 100% !important;
     display: flex;
     flex-direction: column;
-}
-
-/* إصلاح خاص للهواتف */
-@media (max-width: 1024px) {
-    .ai-chat-container,
-    .external-page-container {
-        height: 100% !important;
-    }
-    
-    .ai-iframe,
-    .external-iframe {
-        height: 100% !important;
-    }
-    
-    .view.active#aiChatView .view-content,
-    .view.active#externalPageView .view-content {
-        height: 100% !important;
-    }
-}
-
-/* إصلاح للحواسيب */
-@media (min-width: 1025px) {
-    .ai-chat-container,
-    .external-page-container {
-        height: 100% !important;
-    }
-    
-    .ai-iframe,
-    .external-iframe {
-        height: 100% !important;
-    }
 }
 
 /* Settings - تم التحديث */
@@ -825,7 +828,8 @@ body {
     }
 
     .main-content {
-        height: calc(100vh - var(--header-height) - var(--nav-height));
+        height: calc(100vh - 60px - 70px);
+        position: relative;
     }
 
     .bottom-nav {
@@ -839,7 +843,7 @@ body {
     /* إصلاحات إضافية للهواتف */
     .view.active#aiChatView,
     .view.active#externalPageView {
-        height: calc(100vh - var(--header-height) - var(--nav-height));
+        height: calc(100vh - 60px - 70px);
     }
     
     .ai-chat-container,
@@ -850,6 +854,18 @@ body {
     .view.active#aiChatView .view-content,
     .view.active#externalPageView .view-content {
         height: 100% !important;
+    }
+
+    .header {
+        height: 60px;
+    }
+
+    .home-header {
+        height: 60px;
+    }
+
+    .view-header {
+        height: 60px;
     }
 }
 
