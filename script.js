@@ -118,7 +118,7 @@ function switchView(viewId) {
             setTimeout(() => {
                 const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
                 if (activeIframe) {
-                    adjustIframeHeight(activeIframe);
+                    adjustIframeForMobile(activeIframe);
                 }
             }, 100);
         }
@@ -246,7 +246,7 @@ function goBack() {
     }
 }
 
-// ========== إدارة الـ iframe المحسنة ==========
+// ========== إدارة الـ iframe المحسنة للهواتف ==========
 
 // ضبط ارتفاع الـ iframe تلقائياً بناءً على المحتوى
 function setupIframeResizing() {
@@ -255,7 +255,7 @@ function setupIframeResizing() {
     iframes.forEach(iframe => {
         // استمع لتغيرات المحتوى في الـ iframe
         iframe.addEventListener('load', function() {
-            adjustIframeHeight(this);
+            adjustIframeForMobile(this);
         });
         
         // أيضاً استمع لأخطاء التحميل
@@ -266,7 +266,64 @@ function setupIframeResizing() {
     });
 }
 
-// ضبط ارتفاع الـ iframe
+// ضبط الـ iframe للهواتف - دالة جديدة محسنة
+function adjustIframeForMobile(iframe) {
+    const isMobile = window.innerWidth <= 1024;
+    
+    if (isMobile) {
+        // في الهواتف: استخدام ارتفاع ثابت يتناسب مع الشاشة
+        const viewportHeight = window.innerHeight;
+        const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
+        const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 70;
+        
+        // احسب الارتفاع المتاح مع هوامش آمنة
+        const availableHeight = viewportHeight - headerHeight - navHeight - 20;
+        
+        iframe.style.height = availableHeight + 'px';
+        iframe.style.minHeight = '400px';
+        iframe.style.maxHeight = availableHeight + 'px';
+        iframe.style.width = '100%';
+        iframe.style.overflow = 'auto';
+        
+        // إضافة meta viewport ديناميكي للمحتوى الداخلي
+        try {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            let viewportMeta = iframeDoc.querySelector('meta[name="viewport"]');
+            
+            if (!viewportMeta) {
+                viewportMeta = iframeDoc.createElement('meta');
+                viewportMeta.name = 'viewport';
+                iframeDoc.head.appendChild(viewportMeta);
+            }
+            viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+            
+            // إضافة CSS إضافي للمحتوى الداخلي
+            const style = iframeDoc.createElement('style');
+            style.textContent = `
+                body { 
+                    -webkit-text-size-adjust: 100%; 
+                    text-size-adjust: 100%;
+                    overflow-x: hidden;
+                }
+                img, video { 
+                    max-width: 100%; 
+                    height: auto; 
+                }
+            `;
+            iframeDoc.head.appendChild(style);
+            
+        } catch (error) {
+            console.warn('Cannot modify iframe content for mobile optimization:', error);
+        }
+        
+        console.log('Mobile iframe height set to:', availableHeight);
+    } else {
+        // في الحواسيب: استخدام المنطق القديم
+        adjustIframeHeight(iframe);
+    }
+}
+
+// ضبط ارتفاع الـ iframe (للحواسيب)
 function adjustIframeHeight(iframe) {
     try {
         // حاول الوصول لمحتوى الـ iframe
@@ -288,9 +345,9 @@ function adjustIframeHeight(iframe) {
             const finalHeight = Math.min(height, maxHeight);
             
             iframe.style.height = finalHeight + 'px';
-            iframe.style.minHeight = '400px'; // ارتفاع أدنى
+            iframe.style.minHeight = '400px';
             
-            console.log('Iframe height adjusted to:', finalHeight);
+            console.log('Desktop iframe height adjusted to:', finalHeight);
         }
     } catch (error) {
         // إذا فشل الوصول لمحتوى الـ iframe (مشكلة CORS)
@@ -322,13 +379,13 @@ function setupIframeResizeHandler() {
         resizeTimeout = setTimeout(() => {
             const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
             if (activeIframe) {
-                adjustIframeHeight(activeIframe);
+                adjustIframeForMobile(activeIframe);
             }
         }, 250);
     });
 }
 
-// تحميل الصفحات الخارجية - نسخة محسنة
+// تحميل الصفحات الخارجية - نسخة محسنة للهواتف
 async function loadExternalPage(url, title = 'Page') {
     appState.isLoading = true;
     
@@ -348,7 +405,7 @@ async function loadExternalPage(url, title = 'Page') {
             
             // إعداد الـ iframe بعد التحميل
             externalIframe.onload = function() {
-                adjustIframeHeight(this);
+                adjustIframeForMobile(this);
                 appState.isLoading = false;
             };
             
@@ -388,7 +445,7 @@ function openAIChat() {
         setupIframeForLoading(aiIframe);
         
         aiIframe.onload = function() {
-            adjustIframeHeight(this);
+            adjustIframeForMobile(this);
         };
         
         aiIframe.onerror = function() {
@@ -507,6 +564,12 @@ function setupEventListeners() {
         resizeTimeout = setTimeout(() => {
             updateHeaderVisibility();
             updateBottomNavVisibility();
+            
+            // تحديث الـ iframe النشط
+            const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
+            if (activeIframe) {
+                adjustIframeForMobile(activeIframe);
+            }
         }, 250);
     });
     
