@@ -120,10 +120,12 @@ function switchView(viewId) {
         
         // ضبط ارتفاع الـ iframe إذا كانت الواجهة تحتوي على iframe
         if (viewId === 'aiChat' || viewId === 'externalPage') {
-            // على الهواتف: إخفاء الـ headers والتنقل
+            // على الهواتف: إعداد وضع iframe كامل الشاشة
             if (window.innerWidth <= 1024) {
                 document.body.style.overflow = 'hidden';
                 document.documentElement.style.overflow = 'hidden';
+                // إظهار header العودة
+                showBackHeaderInIframe(viewId);
             }
             
             setTimeout(() => {
@@ -137,6 +139,37 @@ function switchView(viewId) {
             resetIframeStyles();
         }
     }, 150);
+}
+
+// إظهار header العودة في وضع iframe
+function showBackHeaderInIframe(viewId) {
+    const mainArea = document.querySelector('.main-area');
+    
+    // إزالة أي header موجود مسبقاً
+    const existingHeader = document.getElementById('viewHeader');
+    if (existingHeader) {
+        existingHeader.remove();
+    }
+    
+    // إضافة header العودة
+    const viewHeaderHTML = `
+        <header class="header view-header" id="viewHeader">
+            <div class="header-content">
+                <button class="back-btn" id="backBtn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="view-title" id="viewTitle">${viewTitles[viewId] || 'View'}</h1>
+                <div class="header-spacer"></div>
+            </div>
+        </header>
+    `;
+    mainArea.insertAdjacentHTML('afterbegin', viewHeaderHTML);
+    
+    // إعادة إضافة event listener
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', goBack);
+    }
 }
 
 // إعادة تعيين أنماط iframe
@@ -157,6 +190,8 @@ function resetIframeStyles() {
         iframe.style.zIndex = '';
         iframe.style.overflow = '';
         iframe.style.overflowX = '';
+        iframe.style.transform = '';
+        iframe.style.transformOrigin = '';
     });
 }
 
@@ -164,6 +199,7 @@ function resetIframeStyles() {
 function updateHeaderVisibility() {
     const currentView = appState.currentView;
     const mainArea = document.querySelector('.main-area');
+    const isMobile = window.innerWidth <= 1024;
     
     // احذف كلا الهيدرين أولاً لضمان بداية نظيفة
     const existingHomeHeader = document.getElementById('homeHeader');
@@ -172,7 +208,7 @@ function updateHeaderVisibility() {
     if (existingHomeHeader) {
         existingHomeHeader.remove();
     }
-    if (existingViewHeader) {
+    if (existingViewHeader && !(isMobile && (currentView === 'aiChat' || currentView === 'externalPage'))) {
         existingViewHeader.remove();
     }
     
@@ -199,8 +235,8 @@ function updateHeaderVisibility() {
             profileAvatar.addEventListener('click', openProfile);
         }
         
-    } else {
-        // في جميع الواجهات الأخرى: أضف viewHeader فقط
+    } else if (currentView !== 'aiChat' && currentView !== 'externalPage') {
+        // في جميع الواجهات الأخرى (ما عدا iframe): أضف viewHeader فقط
         const viewHeaderHTML = `
             <header class="header view-header mobile-only" id="viewHeader">
                 <div class="header-content">
@@ -234,15 +270,24 @@ function updateHeaderVisibility() {
 // وظيفة إضافية لتأكيد إظهار/إخفاء الهيدر المناسب
 function forceHeaderVisibility() {
     const currentView = appState.currentView;
+    const isMobile = window.innerWidth <= 1024;
     const homeHeader = document.getElementById('homeHeader');
     const viewHeader = document.getElementById('viewHeader');
     
     if (homeHeader) {
-        homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
+        if (isMobile && (currentView === 'aiChat' || currentView === 'externalPage')) {
+            homeHeader.style.display = 'none';
+        } else {
+            homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
+        }
     }
     
     if (viewHeader) {
-        viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
+        if (isMobile && (currentView === 'aiChat' || currentView === 'externalPage')) {
+            viewHeader.style.display = 'flex';
+        } else {
+            viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
+        }
     }
 }
 
@@ -312,18 +357,23 @@ function adjustIframeForMobile(iframe) {
     const isMobile = window.innerWidth <= 1024;
     
     if (isMobile) {
-        // في الهواتف: استخدام كامل ارتفاع الشاشة
+        // في الهواتف: استخدام كامل ارتفاع الشاشة مع تعديل للمقياس
+        const viewportHeight = window.innerHeight;
+        const headerHeight = 60; // ارتفاع header العودة
+        
         iframe.style.position = 'fixed';
-        iframe.style.top = '0';
+        iframe.style.top = headerHeight + 'px';
         iframe.style.left = '0';
         iframe.style.width = '100vw';
-        iframe.style.height = '100vh';
-        iframe.style.minHeight = '100vh';
-        iframe.style.maxHeight = '100vh';
+        iframe.style.height = (viewportHeight - headerHeight) + 'px';
+        iframe.style.minHeight = (viewportHeight - headerHeight) + 'px';
+        iframe.style.maxHeight = (viewportHeight - headerHeight) + 'px';
         iframe.style.border = 'none';
         iframe.style.zIndex = '1001';
         iframe.style.overflow = 'auto';
         iframe.style.background = 'var(--background-color)';
+        iframe.style.transform = 'scale(1)';
+        iframe.style.transformOrigin = 'top left';
         
         // إضافة meta viewport ديناميكي للمحتوى الداخلي
         try {
@@ -358,6 +408,8 @@ function adjustIframeForMobile(iframe) {
                     min-height: 100vh !important;
                     padding: 0 !important;
                     margin: 0 !important;
+                    transform: scale(1) !important;
+                    transform-origin: top left !important;
                 }
                 img, video, iframe { 
                     max-width: 100% !important; 
@@ -386,7 +438,7 @@ function adjustIframeForMobile(iframe) {
             console.warn('Cannot modify iframe content for mobile optimization:', error);
         }
         
-        console.log('Mobile iframe set to full screen');
+        console.log('Mobile iframe set to full screen with header adjustment');
     } else {
         // في الحواسيب: استخدام المنطق القديم
         adjustIframeHeight(iframe);
@@ -656,6 +708,10 @@ function setupEventListeners() {
                     if (homeHeader.style.display !== 'flex') {
                         homeHeader.style.display = 'flex';
                     }
+                } else if (currentView === 'aiChat' || currentView === 'externalPage') {
+                    if (homeHeader.style.display !== 'none') {
+                        homeHeader.style.display = 'none';
+                    }
                 } else {
                     if (homeHeader.style.display !== 'none') {
                         homeHeader.style.display = 'none';
@@ -675,6 +731,10 @@ function setupEventListeners() {
                 if (currentView === 'home') {
                     if (viewHeader.style.display !== 'none') {
                         viewHeader.style.display = 'none';
+                    }
+                } else if (currentView === 'aiChat' || currentView === 'externalPage') {
+                    if (viewHeader.style.display !== 'flex') {
+                        viewHeader.style.display = 'flex';
                     }
                 } else {
                     if (viewHeader.style.display !== 'flex') {
