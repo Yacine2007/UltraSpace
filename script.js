@@ -87,11 +87,6 @@ function switchView(viewId) {
         setTimeout(() => {
             currentActiveView.classList.remove('active');
             currentActiveView.style.animation = '';
-            
-            // إعادة تعيين الأنماط إذا كنا نخرج من وضع iframe
-            if (currentActiveView.id === 'aiChatView' || currentActiveView.id === 'externalPageView') {
-                resetIframeStyles();
-            }
         }, 150);
     }
     
@@ -120,86 +115,20 @@ function switchView(viewId) {
         
         // ضبط ارتفاع الـ iframe إذا كانت الواجهة تحتوي على iframe
         if (viewId === 'aiChat' || viewId === 'externalPage') {
-            // على الهواتف: إعداد وضع iframe كامل الشاشة
-            if (window.innerWidth <= 1024) {
-                document.body.style.overflow = 'hidden';
-                document.documentElement.style.overflow = 'hidden';
-                // إظهار header العودة
-                showBackHeaderInIframe(viewId);
-            }
-            
             setTimeout(() => {
                 const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
                 if (activeIframe) {
-                    adjustIframeForMobile(activeIframe);
+                    setupIframeDimensions(activeIframe);
                 }
             }, 100);
-        } else {
-            // إذا كنا نخرج من وضع iframe، أعد تمكين التمرير
-            resetIframeStyles();
         }
     }, 150);
-}
-
-// إظهار header العودة في وضع iframe
-function showBackHeaderInIframe(viewId) {
-    const mainArea = document.querySelector('.main-area');
-    
-    // إزالة أي header موجود مسبقاً
-    const existingHeader = document.getElementById('viewHeader');
-    if (existingHeader) {
-        existingHeader.remove();
-    }
-    
-    // إضافة header العودة
-    const viewHeaderHTML = `
-        <header class="header view-header" id="viewHeader">
-            <div class="header-content">
-                <button class="back-btn" id="backBtn">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <h1 class="view-title" id="viewTitle">${viewTitles[viewId] || 'View'}</h1>
-                <div class="header-spacer"></div>
-            </div>
-        </header>
-    `;
-    mainArea.insertAdjacentHTML('afterbegin', viewHeaderHTML);
-    
-    // إعادة إضافة event listener
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) {
-        backBtn.addEventListener('click', goBack);
-    }
-}
-
-// إعادة تعيين أنماط iframe
-function resetIframeStyles() {
-    document.body.style.overflow = '';
-    document.documentElement.style.overflow = '';
-    
-    // إعادة تعيين أنماط جميع الـ iframes
-    const allIframes = document.querySelectorAll('.ai-iframe, .external-iframe');
-    allIframes.forEach(iframe => {
-        iframe.style.position = '';
-        iframe.style.top = '';
-        iframe.style.left = '';
-        iframe.style.width = '';
-        iframe.style.height = '';
-        iframe.style.minHeight = '';
-        iframe.style.maxHeight = '';
-        iframe.style.zIndex = '';
-        iframe.style.overflow = '';
-        iframe.style.overflowX = '';
-        iframe.style.transform = '';
-        iframe.style.transformOrigin = '';
-    });
 }
 
 // تحديث رأس الصفحة - النسخة المحسنة
 function updateHeaderVisibility() {
     const currentView = appState.currentView;
     const mainArea = document.querySelector('.main-area');
-    const isMobile = window.innerWidth <= 1024;
     
     // احذف كلا الهيدرين أولاً لضمان بداية نظيفة
     const existingHomeHeader = document.getElementById('homeHeader');
@@ -208,7 +137,7 @@ function updateHeaderVisibility() {
     if (existingHomeHeader) {
         existingHomeHeader.remove();
     }
-    if (existingViewHeader && !(isMobile && (currentView === 'aiChat' || currentView === 'externalPage'))) {
+    if (existingViewHeader) {
         existingViewHeader.remove();
     }
     
@@ -235,8 +164,8 @@ function updateHeaderVisibility() {
             profileAvatar.addEventListener('click', openProfile);
         }
         
-    } else if (currentView !== 'aiChat' && currentView !== 'externalPage') {
-        // في جميع الواجهات الأخرى (ما عدا iframe): أضف viewHeader فقط
+    } else {
+        // في جميع الواجهات الأخرى: أضف viewHeader فقط
         const viewHeaderHTML = `
             <header class="header view-header mobile-only" id="viewHeader">
                 <div class="header-content">
@@ -270,24 +199,15 @@ function updateHeaderVisibility() {
 // وظيفة إضافية لتأكيد إظهار/إخفاء الهيدر المناسب
 function forceHeaderVisibility() {
     const currentView = appState.currentView;
-    const isMobile = window.innerWidth <= 1024;
     const homeHeader = document.getElementById('homeHeader');
     const viewHeader = document.getElementById('viewHeader');
     
     if (homeHeader) {
-        if (isMobile && (currentView === 'aiChat' || currentView === 'externalPage')) {
-            homeHeader.style.display = 'none';
-        } else {
-            homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
-        }
+        homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
     }
     
     if (viewHeader) {
-        if (isMobile && (currentView === 'aiChat' || currentView === 'externalPage')) {
-            viewHeader.style.display = 'flex';
-        } else {
-            viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
-        }
+        viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
     }
 }
 
@@ -317,12 +237,6 @@ function updateViewTitle(viewId) {
 
 // الرجوع للخلف
 function goBack() {
-    // إذا كنا في وضع iframe على الهواتف، أعد تمكين التمرير أولاً
-    if (window.innerWidth <= 1024 && 
-        (appState.currentView === 'aiChat' || appState.currentView === 'externalPage')) {
-        resetIframeStyles();
-    }
-    
     if (appState.viewHistory.length > 1) {
         appState.viewHistory.pop(); // إزالة الواجهة الحالية
         const previousView = appState.viewHistory[appState.viewHistory.length - 1];
@@ -332,120 +246,58 @@ function goBack() {
     }
 }
 
-// ========== إدارة الـ iframe المحسنة للهواتف ==========
+// ========== إدارة الـ iframe المحسنة بشكل كامل ==========
+
+// إعداد أبعاد الـ iframe
+function setupIframeDimensions(iframe) {
+    const isMobile = window.innerWidth <= 1024;
+    const viewportHeight = window.innerHeight;
+    
+    if (isMobile) {
+        // في الهواتف: احسب الارتفاع المتاح مع مراعاة الهيدر والشريط السفلي
+        const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
+        const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 70;
+        const availableHeight = viewportHeight - headerHeight - navHeight;
+        
+        iframe.style.height = availableHeight + 'px';
+        iframe.style.minHeight = '500px';
+        iframe.style.maxHeight = 'none';
+        
+        console.log('Mobile iframe height set to:', availableHeight);
+    } else {
+        // في الحواسيب: استخدم الارتفاع الكامل
+        const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
+        const availableHeight = viewportHeight - headerHeight;
+        
+        iframe.style.height = availableHeight + 'px';
+        iframe.style.minHeight = '600px';
+        
+        console.log('Desktop iframe height set to:', availableHeight);
+    }
+}
 
 // ضبط ارتفاع الـ iframe تلقائياً بناءً على المحتوى
 function setupIframeResizing() {
     const iframes = document.querySelectorAll('.ai-iframe, .external-iframe');
     
     iframes.forEach(iframe => {
+        // إعداد الأبعاد الأولية
+        setupIframeDimensions(iframe);
+        
         // استمع لتغيرات المحتوى في الـ iframe
         iframe.addEventListener('load', function() {
-            adjustIframeForMobile(this);
+            adjustIframeHeight(this);
         });
         
         // أيضاً استمع لأخطاء التحميل
         iframe.addEventListener('error', function() {
             console.error('Iframe failed to load:', this.src);
-            setDefaultIframeHeight(this);
+            setupIframeDimensions(this);
         });
     });
 }
 
-// ضبط الـ iframe للهواتف - دالة جديدة محسنة
-function adjustIframeForMobile(iframe) {
-    const isMobile = window.innerWidth <= 1024;
-    
-    if (isMobile) {
-        // في الهواتف: استخدام كامل ارتفاع الشاشة مع تعديل للمقياس
-        const viewportHeight = window.innerHeight;
-        const headerHeight = 60; // ارتفاع header العودة
-        
-        iframe.style.position = 'fixed';
-        iframe.style.top = headerHeight + 'px';
-        iframe.style.left = '0';
-        iframe.style.width = '100vw';
-        iframe.style.height = (viewportHeight - headerHeight) + 'px';
-        iframe.style.minHeight = (viewportHeight - headerHeight) + 'px';
-        iframe.style.maxHeight = (viewportHeight - headerHeight) + 'px';
-        iframe.style.border = 'none';
-        iframe.style.zIndex = '1001';
-        iframe.style.overflow = 'auto';
-        iframe.style.background = 'var(--background-color)';
-        iframe.style.transform = 'scale(1)';
-        iframe.style.transformOrigin = 'top left';
-        
-        // إضافة meta viewport ديناميكي للمحتوى الداخلي
-        try {
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            let viewportMeta = iframeDoc.querySelector('meta[name="viewport"]');
-            
-            if (!viewportMeta) {
-                viewportMeta = iframeDoc.createElement('meta');
-                viewportMeta.name = 'viewport';
-                iframeDoc.head.appendChild(viewportMeta);
-            }
-            viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-            
-            // إضافة CSS إضافي للمحتوى الداخلي لتحسين الاستجابة
-            const style = iframeDoc.createElement('style');
-            style.textContent = `
-                * {
-                    box-sizing: border-box;
-                }
-                body, html { 
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    width: 100% !important;
-                    height: 100% !important;
-                    overflow-x: hidden !important;
-                    -webkit-text-size-adjust: 100% !important;
-                    text-size-adjust: 100% !important;
-                    position: relative !important;
-                    background: #121212 !important;
-                }
-                body {
-                    min-height: 100vh !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    transform: scale(1) !important;
-                    transform-origin: top left !important;
-                }
-                img, video, iframe { 
-                    max-width: 100% !important; 
-                    height: auto !important; 
-                }
-                table {
-                    width: 100% !important;
-                }
-                .container, .wrapper, .content, main, section {
-                    max-width: 100% !important;
-                    overflow-x: hidden !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }
-            `;
-            
-            // إزالة الأنماط السابقة إذا وجدت
-            const existingStyle = iframeDoc.querySelector('style[data-mobile-fix]');
-            if (existingStyle) {
-                existingStyle.remove();
-            }
-            style.setAttribute('data-mobile-fix', 'true');
-            iframeDoc.head.appendChild(style);
-            
-        } catch (error) {
-            console.warn('Cannot modify iframe content for mobile optimization:', error);
-        }
-        
-        console.log('Mobile iframe set to full screen with header adjustment');
-    } else {
-        // في الحواسيب: استخدام المنطق القديم
-        adjustIframeHeight(iframe);
-    }
-}
-
-// ضبط ارتفاع الـ iframe (للحواسيب)
+// ضبط ارتفاع الـ iframe بناءً على المحتوى
 function adjustIframeHeight(iframe) {
     try {
         // حاول الوصول لمحتوى الـ iframe
@@ -462,35 +314,31 @@ function adjustIframeHeight(iframe) {
                 iframeDoc.documentElement.clientHeight
             );
             
-            // حدد ارتفاعاً أقصى لمنع الصفحات الطويلة جداً
-            const maxHeight = window.innerHeight - 100;
-            const finalHeight = Math.min(height, maxHeight);
+            // في الهواتف، استخدم الارتفاع المحسوب أو الارتفاع المتاح
+            const isMobile = window.innerWidth <= 1024;
+            if (isMobile) {
+                const viewportHeight = window.innerHeight;
+                const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
+                const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 70;
+                const availableHeight = viewportHeight - headerHeight - navHeight;
+                
+                // استخدم الارتفاع الأكبر بين المحتوى المتاح والارتفاع المتاح
+                const finalHeight = Math.max(height, availableHeight);
+                iframe.style.height = finalHeight + 'px';
+            } else {
+                // في الحواسيب، استخدم ارتفاع المحتوى مع حد أقصى
+                const maxHeight = window.innerHeight - 100;
+                const finalHeight = Math.min(height, maxHeight);
+                iframe.style.height = finalHeight + 'px';
+            }
             
-            iframe.style.height = finalHeight + 'px';
-            iframe.style.minHeight = '400px';
-            
-            console.log('Desktop iframe height adjusted to:', finalHeight);
+            console.log('Iframe height adjusted to:', iframe.style.height);
         }
     } catch (error) {
         // إذا فشل الوصول لمحتوى الـ iframe (مشكلة CORS)
         console.warn('Cannot access iframe content:', error);
-        setDefaultIframeHeight(iframe);
+        setupIframeDimensions(iframe);
     }
-}
-
-// تعيين ارتفاع افتراضي للـ iframe
-function setDefaultIframeHeight(iframe) {
-    const viewportHeight = window.innerHeight;
-    const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
-    const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 80;
-    
-    // احسب الارتفاع المتاح
-    const availableHeight = viewportHeight - headerHeight - navHeight - 40;
-    
-    iframe.style.height = availableHeight + 'px';
-    iframe.style.minHeight = '500px';
-    
-    console.log('Default iframe height set to:', availableHeight);
 }
 
 // تحديث أبعاد الـ iframe عند تغيير حجم النافذة
@@ -501,13 +349,17 @@ function setupIframeResizeHandler() {
         resizeTimeout = setTimeout(() => {
             const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
             if (activeIframe) {
-                adjustIframeForMobile(activeIframe);
+                setupIframeDimensions(activeIframe);
+                // أعِد ضبط الارتفاع بعد التغيير
+                setTimeout(() => {
+                    adjustIframeHeight(activeIframe);
+                }, 100);
             }
         }, 250);
     });
 }
 
-// تحميل الصفحات الخارجية - نسخة محسنة للهواتف
+// تحميل الصفحات الخارجية - نسخة محسنة
 async function loadExternalPage(url, title = 'Page') {
     appState.isLoading = true;
     
@@ -527,13 +379,16 @@ async function loadExternalPage(url, title = 'Page') {
             
             // إعداد الـ iframe بعد التحميل
             externalIframe.onload = function() {
-                adjustIframeForMobile(this);
+                setupIframeDimensions(this);
+                setTimeout(() => {
+                    adjustIframeHeight(this);
+                }, 500);
                 appState.isLoading = false;
             };
             
             externalIframe.onerror = function() {
                 console.error('Failed to load iframe content:', url);
-                setDefaultIframeHeight(this);
+                setupIframeDimensions(this);
                 appState.isLoading = false;
             };
             
@@ -552,8 +407,8 @@ async function loadExternalPage(url, title = 'Page') {
 
 // إعداد الـ iframe للتحميل
 function setupIframeForLoading(iframe) {
-    iframe.style.height = '600px'; // ارتفاع مؤقت أثناء التحميل
     iframe.style.opacity = '0.7'; // شفافية أثناء التحميل
+    setupIframeDimensions(iframe);
     
     // إزالة الشفافية بعد التحميل
     setTimeout(() => {
@@ -567,11 +422,14 @@ function openAIChat() {
         setupIframeForLoading(aiIframe);
         
         aiIframe.onload = function() {
-            adjustIframeForMobile(this);
+            setupIframeDimensions(this);
+            setTimeout(() => {
+                adjustIframeHeight(this);
+            }, 500);
         };
         
         aiIframe.onerror = function() {
-            setDefaultIframeHeight(this);
+            setupIframeDimensions(this);
         };
     }
     
@@ -687,10 +545,10 @@ function setupEventListeners() {
             updateHeaderVisibility();
             updateBottomNavVisibility();
             
-            // تحديث الـ iframe النشط
+            // تحديث أبعاد الـ iframe النشط
             const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
             if (activeIframe) {
-                adjustIframeForMobile(activeIframe);
+                setupIframeDimensions(activeIframe);
             }
         }, 250);
     });
@@ -707,10 +565,6 @@ function setupEventListeners() {
                 if (currentView === 'home') {
                     if (homeHeader.style.display !== 'flex') {
                         homeHeader.style.display = 'flex';
-                    }
-                } else if (currentView === 'aiChat' || currentView === 'externalPage') {
-                    if (homeHeader.style.display !== 'none') {
-                        homeHeader.style.display = 'none';
                     }
                 } else {
                     if (homeHeader.style.display !== 'none') {
@@ -731,10 +585,6 @@ function setupEventListeners() {
                 if (currentView === 'home') {
                     if (viewHeader.style.display !== 'none') {
                         viewHeader.style.display = 'none';
-                    }
-                } else if (currentView === 'aiChat' || currentView === 'externalPage') {
-                    if (viewHeader.style.display !== 'flex') {
-                        viewHeader.style.display = 'flex';
                     }
                 } else {
                     if (viewHeader.style.display !== 'flex') {
@@ -774,13 +624,3 @@ function setupEventListeners() {
 
 // بدء التطبيق عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', initApp);
-
-// إضافة أنيميشن fadeOut لـ CSS
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes fadeOut {
-        from { opacity: 1; transform: translateY(0); }
-        to { opacity: 0; transform: translateY(-10px); }
-    }
-`;
-document.head.appendChild(style);
