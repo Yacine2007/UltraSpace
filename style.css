@@ -517,42 +517,68 @@ body {
 
 /* تحسينات خاصة للهواتف في وضع iframe */
 @media (max-width: 1024px) {
+    .view.active#aiChatView,
+    .view.active#externalPageView {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 1000;
+        background: var(--background-color);
+    }
+    
+    .view.active#aiChatView .view-content,
+    .view.active#externalPageView .view-content {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
     .ai-chat-container,
     .external-page-container {
-        height: calc(100vh - var(--header-height) - var(--nav-height)) !important;
-        min-height: auto !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
     }
     
     .ai-iframe,
     .external-iframe {
-        height: 100% !important;
-        min-height: auto !important;
-        transform: scale(1) !important;
-        transform-origin: top left;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        border: none !important;
+        z-index: 1001;
     }
     
-    /* إصلاح viewport للهواتف */
-    .view.active#aiChatView,
-    .view.active#externalPageView {
-        overflow: hidden;
+    /* إخفاء الـ headers والـ bottom nav في وضع iframe على الهواتف */
+    .view.active#aiChatView ~ .bottom-nav,
+    .view.active#externalPageView ~ .bottom-nav {
+        display: none !important;
     }
     
-    .view.active#aiChatView .view-content,
-    .view.active#externalPageView .view-content {
-        height: calc(100vh - var(--header-height)) !important;
-    }
-}
-
-/* تحسينات إضافية للشاشات الصغيرة جداً */
-@media (max-width: 480px) {
-    .ai-chat-container,
-    .external-page-container {
-        height: calc(100vh - 60px - 68px) !important;
-    }
-    
-    .view.active#aiChatView .view-content,
-    .view.active#externalPageView .view-content {
-        height: calc(100vh - 60px) !important;
+    .header {
+        display: none !important;
     }
 }
 
