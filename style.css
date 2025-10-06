@@ -1,3 +1,4 @@
+
 /* Variables - تم التحديث */
 :root {
     --primary-color: #3a86ff;
@@ -388,6 +389,136 @@ body {
     font-size: 1.2rem;
     color: var(--text-secondary);
     font-weight: 400;
+}
+
+/* Stories Section - جديد */
+.stories-section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-color);
+    padding-left: 8px;
+}
+
+.stories-container {
+    display: flex;
+    gap: 20px;
+    padding: 0 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.stories-container::-webkit-scrollbar {
+    display: none;
+}
+
+.story-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 70px;
+}
+
+.story-item:hover {
+    transform: translateY(-2px);
+}
+
+.story-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    padding: 3px;
+    background: var(--background-color);
+    overflow: hidden;
+}
+
+.story-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.story-name {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Suggested Pages Section - جديد */
+.suggested-pages-section {
+    margin-bottom: 30px;
+}
+
+.pages-container {
+    display: flex;
+    gap: 20px;
+    padding: 0 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.pages-container::-webkit-scrollbar {
+    display: none;
+}
+
+.page-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 80px;
+}
+
+.page-item:hover {
+    transform: translateY(-2px);
+}
+
+.page-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.page-item:hover .page-avatar {
+    border-color: var(--primary-color);
+}
+
+.page-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.page-name {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    text-align: center;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
 }
 
 /* Empty States - تم التحديث */
@@ -791,328 +922,173 @@ body {
     transform: scale(1.1);
 }
 
-.bottom-nav .nav-btn span {
-    display: none;
-}
-
-/* Verified Badge */
-.verified-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.verified-badge i {
-    color: var(--primary-color);
-    font-size: 14px;
-}
-
-/* Utility Classes */
-.hidden {
-    display: none !important;
-}
-
-.mobile-only {
-    display: none !important;
-}
-
 /* Responsive Design - تم التحديث */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .sidebar {
-        display: none;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
     .main-area {
         margin-left: 0;
-        height: 100vh;
     }
-
-    .main-content {
-        height: calc(100vh - 60px - 70px);
-        position: relative;
-    }
-
+    
     .bottom-nav {
         display: flex;
     }
-
-    .mobile-only {
-        display: flex !important;
-    }
-
-    /* إصلاحات إضافية للهواتف */
-    .view.active#aiChatView,
-    .view.active#externalPageView {
-        height: calc(100vh - 60px - 70px);
-    }
     
-    .ai-chat-container,
-    .external-page-container {
-        height: 100% !important;
-    }
-    
-    .view.active#aiChatView .view-content,
-    .view.active#externalPageView .view-content {
-        height: 100% !important;
-    }
-
-    .header {
-        height: 60px;
-    }
-
-    .home-header {
-        height: 60px;
-    }
-
-    .view-header {
-        height: 60px;
-    }
-}
-
-@media (max-width: 768px) {
-    .header-content {
-        padding: 0 20px;
-    }
-
-    .home-header .header-content {
-        padding: 0 20px;
-        gap: 16px;
-    }
-
-    .search-bar input {
-        padding: 12px 16px 12px 44px;
-        font-size: 0.9rem;
-    }
-
     .view-content {
         padding: 16px;
+        padding-bottom: calc(var(--nav-height) + 20px);
     }
-
+    
     .welcome-section {
-        padding: 32px 0;
-        margin-bottom: 24px;
+        padding: 30px 0 20px;
     }
-
+    
     .welcome-section h1 {
         font-size: 2rem;
     }
-
+    
     .welcome-section p {
         font-size: 1.1rem;
     }
-
-    .empty-state {
-        padding: 60px 16px;
-    }
-
-    .empty-state i {
-        font-size: 3.5rem;
-    }
-
-    .empty-state h3 {
-        font-size: 1.3rem;
-    }
-
-    .message-item {
-        padding: 16px;
-    }
-
-    .message-avatar {
-        width: 48px;
-        height: 48px;
-        margin-right: 16px;
-    }
-
-    .settings-item {
-        padding: 16px 18px;
-    }
-
-    .error-container {
-        padding: 40px 16px;
-    }
-
-    .error-icon {
-        width: 80px;
-        height: 80px;
-    }
-
-    .error-icon i {
-        font-size: 36px;
-    }
-
-    .error-container h2 {
-        font-size: 1.5rem;
-    }
-
-    .bottom-nav {
-        padding: 0 12px;
-        height: 70px;
-    }
-
-    .bottom-nav .nav-btn {
-        min-height: 58px;
-        max-width: 70px;
-    }
-
-    .bottom-nav .nav-btn i {
-        font-size: 20px;
-    }
-
-    .view-header .header-content {
-        padding: 0 16px;
-    }
-
-    .back-btn {
-        width: 36px;
-        height: 36px;
-    }
-
-    .view-title {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .header-content {
-        padding: 0 16px;
-    }
-
+    
     .home-header .header-content {
         padding: 0 16px;
         gap: 12px;
     }
-
+    
     .search-bar input {
-        padding: 10px 14px 10px 42px;
-        font-size: 0.85rem;
+        padding: 12px 16px 12px 44px;
+        font-size: 0.9rem;
     }
-
-    .view-content {
-        padding: 12px;
+    
+    .search-bar i {
+        left: 16px;
     }
-
-    .welcome-section h1 {
-        font-size: 1.8rem;
-    }
-
-    .welcome-section p {
-        font-size: 1rem;
-    }
-
-    .settings-item {
-        padding: 14px 16px;
-    }
-
+    
     .user-avatar {
         width: 38px;
         height: 38px;
     }
-
-    .bottom-nav {
-        padding: 0 8px;
-        height: 68px;
+    
+    .header-actions {
+        gap: 12px;
     }
-
-    .bottom-nav .nav-btn {
-        padding: 10px 6px;
-        min-height: 56px;
-        max-width: 65px;
-        border-radius: var(--radius-sm);
+    
+    .stories-container,
+    .pages-container {
+        gap: 16px;
     }
-
-    .bottom-nav .nav-btn i {
-        font-size: 18px;
+    
+    .story-avatar {
+        width: 60px;
+        height: 60px;
     }
-
-    .view-header .header-content {
-        padding: 0 12px;
+    
+    .story-name {
+        font-size: 0.75rem;
+        max-width: 60px;
     }
-
-    .back-btn {
-        width: 34px;
-        height: 34px;
+    
+    .page-avatar {
+        width: 70px;
+        height: 70px;
     }
-
-    .view-title {
+    
+    .page-name {
+        font-size: 0.8rem;
+        max-width: 70px;
+    }
+    
+    .empty-state {
+        padding: 60px 16px;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.2rem;
+    }
+    
+    .empty-state p {
         font-size: 0.95rem;
     }
-
-    .message-item {
-        padding: 14px;
-    }
-
-    .message-avatar {
-        width: 44px;
-        height: 44px;
-        margin-right: 14px;
-    }
 }
 
-/* في الحواسيب - إظهار homeHeader دائمًا */
-@media (min-width: 1025px) {
-    .home-header {
-        display: flex !important;
-    }
-    .view-header {
-        display: none !important;
+@media (max-width: 480px) {
+    .view-content {
+        padding: 12px;
+        padding-bottom: calc(var(--nav-height) + 16px);
     }
     
-    /* إصلاح الـ iframe في الحواسيب */
-    .main-content {
-        height: calc(100vh - var(--header-height));
-    }
-}
-
-/* في الهواتف - التحكم عبر JavaScript فقط */
-@media (max-width: 1024px) {
-    .home-header, .view-header {
-        display: none;
+    .welcome-section h1 {
+        font-size: 1.8rem;
     }
     
-    .main-content {
-        height: calc(100vh - 60px - 70px);
+    .welcome-section p {
+        font-size: 1rem;
+    }
+    
+    .stories-container,
+    .pages-container {
+        gap: 12px;
+    }
+    
+    .story-avatar {
+        width: 55px;
+        height: 55px;
+    }
+    
+    .story-name {
+        font-size: 0.7rem;
+        max-width: 55px;
+    }
+    
+    .page-avatar {
+        width: 65px;
+        height: 65px;
+    }
+    
+    .page-name {
+        font-size: 0.75rem;
+        max-width: 65px;
     }
 }
 
-/* Scrollbar Styling - تم التحديث */
+/* Verified Badge */
+.verified-badge {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+}
+
+/* Posts Container */
+.posts-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Hide scrollbars for cleaner look */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
+    background: var(--background-color);
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--border-color);
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
-}
-
-/* تحسينات للتفاعلات */
-@media (hover: hover) {
-    .nav-btn:hover,
-    .settings-item:hover,
-    .message-item:hover {
-        transform: translateY(-2px);
-    }
-}
-
-/* تحسينات للأجهزة التي تدعم الـ Hover */
-@media (hover: none) {
-    .nav-btn:active,
-    .settings-item:active,
-    .message-item:active {
-        transform: scale(0.98);
-        transition: transform 0.1s ease;
-    }
-}
-
-/* أنيميشن إضافية */
-@keyframes fadeOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-10px); }
+    background: var(--text-muted);
 }
