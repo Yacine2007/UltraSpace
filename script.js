@@ -263,7 +263,6 @@ function setupIframeDimensions(iframe) {
         iframe.style.minHeight = '500px';
         iframe.style.maxHeight = 'none';
         
-        console.log('Mobile iframe height set to:', availableHeight);
     } else {
         // في الحواسيب: استخدم الارتفاع الكامل
         const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
@@ -271,8 +270,6 @@ function setupIframeDimensions(iframe) {
         
         iframe.style.height = availableHeight + 'px';
         iframe.style.minHeight = '600px';
-        
-        console.log('Desktop iframe height set to:', availableHeight);
     }
 }
 
@@ -331,8 +328,6 @@ function adjustIframeHeight(iframe) {
                 const finalHeight = Math.min(height, maxHeight);
                 iframe.style.height = finalHeight + 'px';
             }
-            
-            console.log('Iframe height adjusted to:', iframe.style.height);
         }
     } catch (error) {
         // إذا فشل الوصول لمحتوى الـ iframe (مشكلة CORS)
@@ -458,7 +453,6 @@ function showErrorView() {
 }
 
 // إعداد مستمعي الأحداث
-// إعداد مستمعي الأحداث
 function setupEventListeners() {
     // التنقل بين الواجهات
     navButtons.forEach(btn => {
@@ -540,6 +534,10 @@ function setupEventListeners() {
                 loadExternalPage(pageUrl, pageName);
             } else if (pageName === 'Yacine') {
                 loadExternalPage('https://yacine2007.github.io/UltraSpace/Yacine/index.html', 'Yacine');
+            } else if (pageName === 'B.Y PRO') {
+                loadExternalPage('https://yacine2007.github.io/UltraSpace/BYUS/B.Y%20PRO.html', 'B.Y PRO');
+            } else if (pageName === 'UltraSpace') {
+                loadExternalPage('https://yacine2007.github.io/UltraSpace/BYUS/USP.html', 'UltraSpace');
             }
             // يمكن إضافة المزيد من الصفحات هنا
         }
@@ -652,5 +650,6 @@ function setupEventListeners() {
         }
     }, { passive: false });
 }
+
 // بدء التطبيق عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', initApp);
