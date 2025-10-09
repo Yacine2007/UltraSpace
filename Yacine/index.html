@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -168,6 +168,17 @@
 
         .btn-success:hover {
             background-color: #36a420;
+        }
+
+        .btn-link {
+            background-color: transparent;
+            color: #00AFFF;
+            border: 1px solid #00AFFF;
+            text-decoration: none;
+        }
+
+        .btn-link:hover {
+            background-color: rgba(0, 175, 255, 0.1);
         }
 
         /* Profile Details */
@@ -471,6 +482,22 @@
             }
         }
 
+        /* Text Direction */
+        .text-rtl {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .text-ltr {
+            direction: ltr;
+            text-align: left;
+        }
+        
+        .post-content p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .cover-photo {
@@ -611,7 +638,7 @@
             <h2>Posts</h2>
             
             <!-- منشور 15 سبتمبر 2025 -->
-            <div class="post">
+            <div class="post" id="post1">
                 <div class="post-header">
                     <div class="post-profile-pic">
                         <img src="Yacine.png" alt="Yacine Ben Mokrane">
@@ -620,16 +647,25 @@
                         <div class="post-user-name">Yacine Ben Mokrane <i style="font-size: 0.8rem;" class="fas fa-check-circle verification-badge"></i></div>
                         <div class="post-time" id="oldPostTime">September 15, 2025</div>
                     </div>
+                    <button class="btn btn-secondary share-btn" data-post="post1">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
                 </div>
                 <div class="post-content">
-                    <p>منذ فترة وأنا أعاني من صعوبة في إيجاد أصدقائي والمستخدمين للتواصل معي، خاصة بعد الأزمة التي مررت بها على فيسبوك. الانتقال إلى UltraSpace هو البقاء الأبدي لي الآن.</p>
-                    
-                    <p>لقد وجدت لكم حلاً للتواصل معي في حالات غيابي، وهو هذا الكود QR. امسحوه وسيأخذكم لرابط صفحة تحتوي على جميع مواقع التواصل المتاحة والمستخدمة بكثرة ليسهل إيجادي.</p>
-                    
-                    <p>وهذا هو الرابط نفسه:</p>
-                    <p><a href="https://yacine2007.github.io/Yacine2007/communication.html" style="color: #00AFFF;">https://yacine2007.github.io/Yacine2007/communication.html</a></p>
-                    
-                    <p>هذا الابتكار ساعد الكثيرين في إيجادي.</p>
+                    <div class="text-rtl">
+                        <p>منذ فترة وأنا أعاني من صعوبة في إيجاد أصدقائي والمستخدمين للتواصل معي، خاصة بعد الأزمة التي مررت بها على فيسبوك. الانتقال إلى UltraSpace هو البقاء الأبدي لي الآن.</p>
+                        
+                        <p>لقد وجدت لكم حلاً للتواصل معي في حالات غيابي، وهو هذا الكود QR. امسحوه وسيأخذكم لرابط صفحة تحتوي على جميع مواقع التواصل المتاحة والمستخدمة بكثرة ليسهل إيجادي.</p>
+                        
+                        <p>وهذا هو الرابط نفسه:</p>
+                        <div style="text-align: center; margin: 15px 0;">
+                            <a href="https://yacine2007.github.io/Yacine2007/communication.html" class="btn btn-link" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> زر التواصل
+                            </a>
+                        </div>
+                        
+                        <p>هذا الابتكار ساعد الكثيرين في إيجادي.</p>
+                    </div>
                     
                     <div class="post-image" id="qrImage">
                         <img src="QRY.png" alt="QR Code for Communication">
@@ -652,8 +688,8 @@
                         <i class="far fa-comment"></i>
                         <span>Comment</span>
                     </div>
-                    <div class="post-action share-btn">
-                        <i class="far fa-share-square"></i>
+                    <div class="post-action share-btn" data-post="post1">
+                        <i class="fas fa-share-alt"></i>
                         <span>Share</span>
                     </div>
                 </div>
@@ -664,7 +700,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Sarah Ali</div>
-                            <div class="comment-text">فكرة رائعة! هذا سيساعد الجميع في التواصل معك بسهولة.</div>
+                            <div class="comment-text text-rtl">فكرة رائعة! هذا سيساعد الجميع في التواصل معك بسهولة.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -683,7 +719,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Karim B.</div>
-                            <div class="comment-text">لقد جربت الرابط وهو يعمل بشكل ممتاز! شكراً على هذه الفكرة الذكية.</div>
+                            <div class="comment-text text-rtl">لقد جربت الرابط وهو يعمل بشكل ممتاز! شكراً على هذه الفكرة الذكية.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -702,7 +738,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Ahmed M.</div>
-                            <div class="comment-text">فعلاً كانت هناك مشكلة في التواصل معك. شكراً على هذا الحل البسيط والفعال!</div>
+                            <div class="comment-text text-rtl">فعلاً كانت هناك مشكلة في التواصل معك. شكراً على هذا الحل البسيط والفعال!</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -721,7 +757,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Marie L.</div>
-                            <div class="comment-text">J'ai scanné le code QR et cela fonctionne parfaitement! Merci pour cette solution pratique.</div>
+                            <div class="comment-text text-ltr">J'ai scanné le code QR et cela fonctionne parfaitement! Merci pour cette solution pratique.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -740,7 +776,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">John D.</div>
-                            <div class="comment-text">This is a brilliant solution! I've been having trouble finding your contact info. Thanks for making it easier.</div>
+                            <div class="comment-text text-ltr">This is a brilliant solution! I've been having trouble finding your contact info. Thanks for making it easier.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -759,7 +795,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Sophie K.</div>
-                            <div class="comment-text">I'm so glad you found a solution! This QR code idea is genius and will help so many people connect with you.</div>
+                            <div class="comment-text text-ltr">I'm so glad you found a solution! This QR code idea is genius and will help so many people connect with you.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -779,7 +815,7 @@
             </div>
             
             <!-- المنشور الأصلي -->
-            <div class="post">
+            <div class="post" id="post2">
                 <div class="post-header">
                     <div class="post-profile-pic">
                         <img src="Yacine.png" alt="Yacine Ben Mokrane">
@@ -788,9 +824,12 @@
                         <div class="post-user-name">Yacine Ben Mokrane <i style="font-size: 0.8rem;" class="fas fa-check-circle verification-badge"></i></div>
                         <div class="post-time" id="postTime">3 hours ago</div>
                     </div>
+                    <button class="btn btn-secondary share-btn" data-post="post2">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
                 </div>
                 <div class="post-content">
-                    <p>I am happy today because I launched my own platform, UltraSpace, which I will use after I retire from Facebook. I will never return to that platform. I will make my platform the best and easiest platform, with complete freedom, and I will be strongly present with you</p>
+                    <p class="text-ltr">I am happy today because I launched my own platform, UltraSpace, which I will use after I retire from Facebook. I will never return to that platform. I will make my platform the best and easiest platform, with complete freedom, and I will be strongly present with you</p>
                 </div>
                 <div class="post-stats">
                     <div class="post-likes">
@@ -809,8 +848,8 @@
                         <i class="far fa-comment"></i>
                         <span>Comment</span>
                     </div>
-                    <div class="post-action share-btn">
-                        <i class="far fa-share-square"></i>
+                    <div class="post-action share-btn" data-post="post2">
+                        <i class="fas fa-share-alt"></i>
                         <span>Share</span>
                     </div>
                 </div>
@@ -821,7 +860,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Sarah Ali</div>
-                            <div class="comment-text">Amazing work, Yacine! Proud of what you're accomplishing!</div>
+                            <div class="comment-text text-ltr">Amazing work, Yacine! Proud of what you're accomplishing!</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -840,7 +879,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Karim B.</div>
-                            <div class="comment-text">Can't wait to try it out! When will it be available for public testing?</div>
+                            <div class="comment-text text-ltr">Can't wait to try it out! When will it be available for public testing?</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -859,7 +898,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Ahmed M.</div>
-                            <div class="comment-text">مبروك ياسين! أتمنى لك التوفيق في مشروعك الجديد.</div>
+                            <div class="comment-text text-rtl">مبروك ياسين! أتمنى لك التوفيق في مشروعك الجديد.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -878,7 +917,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Marie L.</div>
-                            <div class="comment-text">Félicitations pour cette nouvelle plateforme ! J'ai hâte de la découvrir.</div>
+                            <div class="comment-text text-ltr">Félicitations pour cette nouvelle plateforme ! J'ai hâte de la découvrir.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -897,7 +936,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">John D.</div>
-                            <div class="comment-text">This is a great initiative! Looking forward to seeing what UltraSpace has to offer.</div>
+                            <div class="comment-text text-ltr">This is a great initiative! Looking forward to seeing what UltraSpace has to offer.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -916,7 +955,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Sophie K.</div>
-                            <div class="comment-text">I'm excited about this new platform! Good luck with the development.</div>
+                            <div class="comment-text text-ltr">I'm excited about this new platform! Good luck with the development.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -935,7 +974,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Mohamed T.</div>
-                            <div class="comment-text">عمل رائع يا ياسين! نتمنى لك النجاح والتوفيق في هذا المشروع الطموح.</div>
+                            <div class="comment-text text-rtl">عمل رائع يا ياسين! نتمنى لك النجاح والتوفيق في هذا المشروع الطموح.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -954,7 +993,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Emma W.</div>
-                            <div class="comment-text">This sounds promising! Can you share more details about the features?</div>
+                            <div class="comment-text text-ltr">This sounds promising! Can you share more details about the features?</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -973,7 +1012,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Pierre G.</div>
-                            <div class="comment-text">Bravo pour cette initiative ! J'espère que cela deviendra une alternative sérieuse.</div>
+                            <div class="comment-text text-ltr">Bravo pour cette initiative ! J'espère que cela deviendra une alternative sérieuse.</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -992,7 +1031,7 @@
                         </div>
                         <div class="comment-content">
                             <div class="comment-user">Lina R.</div>
-                            <div class="comment-text">أتمنى لك النجاح والتوفيق في مشروعك الجديد. بالتأكيد سيكون منصة رائعة!</div>
+                            <div class="comment-text text-rtl">أتمنى لك النجاح والتوفيق في مشروعك الجديد. بالتأكيد سيكون منصة رائعة!</div>
                             <div class="comment-actions">
                                 <div class="comment-action like-comment">
                                     <i class="far fa-heart"></i>
@@ -1021,6 +1060,11 @@
         </div>
     </div>
 
+    <!-- Toast for sharing -->
+    <div class="toast" id="shareToast">
+        <i class="fas fa-check-circle"></i> Link copied to clipboard!
+    </div>
+
     <script>
         // DOM Elements
         const profilePicture = document.getElementById('profilePicture');
@@ -1034,6 +1078,8 @@
         const ageElement = document.getElementById('age');
         const postTimeElement = document.getElementById('postTime');
         const qrImage = document.getElementById('qrImage');
+        const shareButtons = document.querySelectorAll('.share-btn');
+        const shareToast = document.getElementById('shareToast');
         
         // Calculate age based on birth date (September 9, 2007)
         function calculateAge() {
@@ -1155,9 +1201,97 @@
             });
         });
         
+        // Share Functionality
+        shareButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post');
+                const postLink = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+                
+                // Copy to clipboard
+                navigator.clipboard.writeText(postLink).then(() => {
+                    // Show toast
+                    shareToast.style.display = 'block';
+                    setTimeout(() => {
+                        shareToast.style.display = 'none';
+                    }, 3000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = postLink;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    // Show toast
+                    shareToast.style.display = 'block';
+                    setTimeout(() => {
+                        shareToast.style.display = 'none';
+                    }, 3000);
+                });
+            });
+        });
+        
+        // Check URL for post parameter and scroll to that post
+        function checkUrlForPost() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('post');
+            
+            if (postId) {
+                const targetPost = document.getElementById(postId);
+                if (targetPost) {
+                    // Hide all posts
+                    document.querySelectorAll('.post').forEach(post => {
+                        post.style.display = 'none';
+                    });
+                    
+                    // Show only the target post
+                    targetPost.style.display = 'block';
+                    
+                    // Scroll to the post
+                    setTimeout(() => {
+                        targetPost.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                    
+                    // Notify parent window (if in iframe)
+                    if (window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'POST_LOADED',
+                            postId: postId
+                        }, '*');
+                    }
+                }
+            }
+        }
+        
         // Initialize functions
         calculateAge();
         calculatePostTime();
+        checkUrlForPost();
+        
+        // Listen for messages from parent window
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'SHOW_POST') {
+                const postId = event.data.postId;
+                const targetPost = document.getElementById(postId);
+                
+                if (targetPost) {
+                    // Hide all posts
+                    document.querySelectorAll('.post').forEach(post => {
+                        post.style.display = 'none';
+                    });
+                    
+                    // Show only the target post
+                    targetPost.style.display = 'block';
+                    
+                    // Scroll to the post
+                    setTimeout(() => {
+                        targetPost.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
+            }
+        });
     </script>
 </body>
 </html>
