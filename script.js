@@ -44,23 +44,126 @@ const viewTitles = {
     error: 'Error'
 };
 
+// ========== نظام مشاركة المنشورات والروابط المباشرة ==========
+
+// وظيفة لقراءة معلمات URL وتحديد المنشور المطلوب
+function handleUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('post');
+    
+    console.log('URL Parameters detected:', { postId });
+    
+    if (postId) {
+        // إذا كان هناك معلمة post، قم بتحميل صفحة Yacine مع المنشور المحدد
+        loadYacineWithPost(postId);
+        return true;
+    }
+    return false;
+}
+
+// تحميل صفحة Yacine مع منشور محدد
+function loadYacineWithPost(postId) {
+    console.log('Loading Yacine with post:', postId);
+    
+    // تأكد من أن صفحة Yacine محملة أولاً
+    loadExternalPage('Yacine/index.html', 'Yacine');
+    
+    // بعد تحميل الـ iframe، أرسل رسالة بالمنشور المطلوب
+    if (externalIframe) {
+        const checkIframeLoaded = setInterval(() => {
+            if (externalIframe.contentWindow && externalIframe.src.includes('Yacine/index.html')) {
+                clearInterval(checkIframeLoaded);
+                
+                // أرسل رسالة إلى الـ iframe لتحديد المنشور المطلوب
+                setTimeout(() => {
+                    externalIframe.contentWindow.postMessage({
+                        type: 'SHOW_POST',
+                        postId: postId
+                    }, '*');
+                    
+                    console.log('Message sent to iframe for post:', postId);
+                }, 1000);
+            }
+        }, 100);
+        
+        // وقت انتظار أقصى 5 ثواني
+        setTimeout(() => clearInterval(checkIframeLoaded), 5000);
+    }
+}
+
+// استمع لرسائل من الـ iframe (للتأكيد أو معلومات إضافية)
+window.addEventListener('message', function(event) {
+    // تحقق من مصدر الرسالة لأسباب أمنية (يمكنك تحديد النطاقات المسموحة)
+    const allowedOrigins = [
+        'https://yacine2007.github.io',
+        window.location.origin,
+        'http://localhost:3000', // للتطوير المحلي
+        'http://127.0.0.1:3000'  // للتطوير المحلي
+    ];
+    
+    if (!allowedOrigins.includes(event.origin)) {
+        console.warn('Message from unauthorized origin:', event.origin);
+        return;
+    }
+    
+    if (event.data && event.data.type === 'POST_LOADED') {
+        console.log('Post loaded in iframe:', event.data.postId);
+        // يمكنك إضافة أي إجراء إضافي هنا مثل إشعار للمستخدم
+    }
+    
+    if (event.data && event.data.type === 'SHARE_LINK_REQUEST') {
+        // إذا طلب الـ iframe رابط مشاركة
+        const postId = event.data.postId;
+        const shareLink = generatePostShareLink(postId);
+        
+        // أرسل الرابط kembali إلى الـ iframe
+        event.source.postMessage({
+            type: 'SHARE_LINK_RESPONSE',
+            shareLink: shareLink
+        }, event.origin);
+    }
+});
+
+// إنشاء رابط مشاركة للمنشور
+function generatePostShareLink(postId) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?post=${postId}`;
+}
+
+// ========== نهاية نظام المشاركة ==========
+
 // تهيئة التطبيق
 function initApp() {
-    setTimeout(() => {
-        loadingScreen.style.opacity = '0';
+    // أولاً: تحقق من معلمات URL للروابط المباشرة
+    const hasPostParam = handleUrlParameters();
+    
+    // إذا لم يكن هناك معلمة post، استمر في التحميل العادي
+    if (!hasPostParam) {
         setTimeout(() => {
-            loadingScreen.remove();
-            appContainer.style.display = 'block';
-            setupEventListeners();
-            updateHeaderVisibility();
-            updateBottomNavVisibility();
-            
-            // إعداد ضبط أبعاد الـ iframe
-            setupIframeResizing();
-            setupIframeResizeHandler();
-            
-        }, 500);
-    }, 2000);
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.remove();
+                appContainer.style.display = 'block';
+                setupEventListeners();
+                updateHeaderVisibility();
+                updateBottomNavVisibility();
+                
+                // إعداد ضبط أبعاد الـ iframe
+                setupIframeResizing();
+                setupIframeResizeHandler();
+                
+            }, 500);
+        }, 2000);
+    } else {
+        // إذا كان هناك معلمة post، تخطى شاشة التحميل مباشرة
+        loadingScreen.remove();
+        appContainer.style.display = 'block';
+        setupEventListeners();
+        updateHeaderVisibility();
+        updateBottomNavVisibility();
+        setupIframeResizing();
+        setupIframeResizeHandler();
+    }
 
     applyLanguage();
 }
@@ -359,10 +462,13 @@ async function loadExternalPage(url, title = 'Page') {
     appState.isLoading = true;
     
     try {
-        const response = await fetch(url, { method: 'HEAD' });
-        
-        if (!response.ok) {
-            throw new Error('Page not found');
+        // للصفحات المحلية، استخدم fetch للتحقق
+        if (!url.startsWith('http')) {
+            const response = await fetch(url, { method: 'HEAD' });
+            
+            if (!response.ok) {
+                throw new Error('Page not found');
+            }
         }
         
         if (externalIframe) {
@@ -385,6 +491,7 @@ async function loadExternalPage(url, title = 'Page') {
                 console.error('Failed to load iframe content:', url);
                 setupIframeDimensions(this);
                 appState.isLoading = false;
+                showErrorView();
             };
             
             switchView('externalPage');
@@ -519,7 +626,7 @@ function setupEventListeners() {
             const storyName = storyItem.querySelector('.story-name').textContent;
             
             if (storyName === 'Yacine') {
-                loadExternalPage('https://yacine2007.github.io/UltraSpace/Yacine/index.html', 'Yacine');
+                loadExternalPage('Yacine/index.html', 'Yacine');
             }
             // يمكن إضافة المزيد من الستوريات هنا
         }
@@ -533,11 +640,11 @@ function setupEventListeners() {
             if (pageUrl) {
                 loadExternalPage(pageUrl, pageName);
             } else if (pageName === 'Yacine') {
-                loadExternalPage('https://yacine2007.github.io/UltraSpace/Yacine/index.html', 'Yacine');
+                loadExternalPage('Yacine/index.html', 'Yacine');
             } else if (pageName === 'B.Y PRO') {
-                loadExternalPage('https://yacine2007.github.io/UltraSpace/BYUS/B.Y%20PRO.html', 'B.Y PRO');
+                loadExternalPage('BYUS/B.Y%20PRO.html', 'B.Y PRO');
             } else if (pageName === 'UltraSpace') {
-                loadExternalPage('https://yacine2007.github.io/UltraSpace/BYUS/USP.html', 'UltraSpace');
+                loadExternalPage('BYUS/USP.html', 'UltraSpace');
             }
             // يمكن إضافة المزيد من الصفحات هنا
         }
