@@ -50,14 +50,22 @@ const viewTitles = {
 function handleUrlParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const postId = urlParams.get('post');
+    const pageParam = urlParams.get('page');
     
-    console.log('URL Parameters detected:', { postId });
+    console.log('URL Parameters detected:', { postId, pageParam });
     
+    // إذا كان هناك معلمة page، قم بتحميل الصفحة المطلوبة
+    if (pageParam === 'yacine') {
+        loadExternalPage('Yacine/index.html', 'Yacine');
+        return true;
+    }
+    
+    // إذا كان هناك معلمة post، قم بتحميل Yacine مع المنشور المحدد
     if (postId) {
-        // إذا كان هناك معلمة post، قم بتحميل صفحة Yacine مع المنشور المحدد
         loadYacineWithPost(postId);
         return true;
     }
+    
     return false;
 }
 
@@ -65,16 +73,15 @@ function handleUrlParameters() {
 function loadYacineWithPost(postId) {
     console.log('Loading Yacine with post:', postId);
     
-    // تأكد من أن صفحة Yacine محملة أولاً
+    // تحميل صفحة Yacine
     loadExternalPage('Yacine/index.html', 'Yacine');
     
-    // بعد تحميل الـ iframe، أرسل رسالة بالمنشور المطلوب
+    // إرسال رسالة بالمنشور المطلوب بعد تحميل الـ iframe
     if (externalIframe) {
         const checkIframeLoaded = setInterval(() => {
             if (externalIframe.contentWindow && externalIframe.src.includes('Yacine/index.html')) {
                 clearInterval(checkIframeLoaded);
                 
-                // أرسل رسالة إلى الـ iframe لتحديد المنشور المطلوب
                 setTimeout(() => {
                     externalIframe.contentWindow.postMessage({
                         type: 'SHOW_POST',
@@ -86,22 +93,31 @@ function loadYacineWithPost(postId) {
             }
         }, 100);
         
-        // وقت انتظار أقصى 5 ثواني
         setTimeout(() => clearInterval(checkIframeLoaded), 5000);
     }
 }
 
 // استمع لرسائل من الـ iframe (للتأكيد أو معلومات إضافية)
 window.addEventListener('message', function(event) {
-    // تحقق من مصدر الرسالة لأسباب أمنية (يمكنك تحديد النطاقات المسموحة)
+    // تحقق من مصدر الرسالة لأسباب أمنية
     const allowedOrigins = [
         'https://yacine2007.github.io',
         window.location.origin,
-        'http://localhost:3000', // للتطوير المحلي
-        'http://127.0.0.1:3000'  // للتطوير المحلي
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://yacine2007.github.io/UltraSpace',
+        'https://yacine2007.github.io/UltraSpace/'
     ];
     
-    if (!allowedOrigins.includes(event.origin)) {
+    let originAllowed = false;
+    for (const allowedOrigin of allowedOrigins) {
+        if (event.origin === allowedOrigin || event.origin.startsWith(allowedOrigin)) {
+            originAllowed = true;
+            break;
+        }
+    }
+    
+    if (!originAllowed) {
         console.warn('Message from unauthorized origin:', event.origin);
         return;
     }
@@ -135,10 +151,10 @@ function generatePostShareLink(postId) {
 // تهيئة التطبيق
 function initApp() {
     // أولاً: تحقق من معلمات URL للروابط المباشرة
-    const hasPostParam = handleUrlParameters();
+    const hasUrlParams = handleUrlParameters();
     
-    // إذا لم يكن هناك معلمة post، استمر في التحميل العادي
-    if (!hasPostParam) {
+    if (!hasUrlParams) {
+        // التحميل العادي إذا لم توجد معلمات
         setTimeout(() => {
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
@@ -148,14 +164,13 @@ function initApp() {
                 updateHeaderVisibility();
                 updateBottomNavVisibility();
                 
-                // إعداد ضبط أبعاد الـ iframe
                 setupIframeResizing();
                 setupIframeResizeHandler();
                 
             }, 500);
         }, 2000);
     } else {
-        // إذا كان هناك معلمة post، تخطى شاشة التحميل مباشرة
+        // إذا كانت هناك معلمات، تخطى شاشة التحميل
         loadingScreen.remove();
         appContainer.style.display = 'block';
         setupEventListeners();
@@ -457,18 +472,16 @@ function setupIframeResizeHandler() {
     });
 }
 
-// تحميل الصفحات الخارجية - نسخة محسنة
+// ========== نظام تحميل الصفحات المحسّن مع إعادة التوجيه ==========
+
+// وظيفة محسنة لتحميل الصفحات الخارجية
 async function loadExternalPage(url, title = 'Page') {
     appState.isLoading = true;
     
     try {
-        // للصفحات المحلية، استخدم fetch للتحقق
-        if (!url.startsWith('http')) {
-            const response = await fetch(url, { method: 'HEAD' });
-            
-            if (!response.ok) {
-                throw new Error('Page not found');
-            }
+        // إذا كان الرابط لصفحة Yacine، تأكد من تحميلها داخل الـ iframe
+        if (url.includes('/Yacine/') || url === 'Yacine/index.html') {
+            url = 'Yacine/index.html'; // تأكد من المسار النسبي
         }
         
         if (externalIframe) {
@@ -483,6 +496,21 @@ async function loadExternalPage(url, title = 'Page') {
                 setupIframeDimensions(this);
                 setTimeout(() => {
                     adjustIframeHeight(this);
+                    
+                    // بعد تحميل Yacine، تحقق إذا كان هناك منشور مطلوب
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const postId = urlParams.get('post');
+                    
+                    if (postId && externalIframe.contentWindow) {
+                        // أرسل رسالة إلى الـ iframe لتحديد المنشور المطلوب
+                        setTimeout(() => {
+                            externalIframe.contentWindow.postMessage({
+                                type: 'SHOW_POST',
+                                postId: postId
+                            }, '*');
+                        }, 500);
+                    }
+                    
                 }, 500);
                 appState.isLoading = false;
             };
@@ -558,6 +586,38 @@ function showErrorView() {
     switchView('error');
     appState.isLoading = false;
 }
+
+// ========== نظام إعادة التوجيه التلقائي ==========
+
+// تحقق إذا كانت الصفحة الحالية هي صفحة Yacine المنفصلة وأعد التوجيه
+function checkAndRedirectIfNeeded() {
+    // إذا كنا في نافذة رئيسية (وليست iframe) وعنوان URL يحتوي على Yacine مباشرة
+    if (window.self === window.top && window.location.href.includes('/Yacine/index.html')) {
+        console.log('Yacine page opened directly, redirecting to UltraSpace...');
+        
+        // استخراج معلمات من URL الحالي
+        const currentUrl = new URL(window.location.href);
+        const postParam = currentUrl.searchParams.get('post');
+        
+        // بناء رابط UltraSpace الجديد
+        let ultraSpaceUrl = window.location.origin + window.location.pathname.replace('/Yacine/index.html', '/index.html');
+        
+        // إضافة معلمة post إذا كانت موجودة
+        if (postParam) {
+            ultraSpaceUrl += `?post=${postParam}`;
+        } else {
+            // إذا لم تكن هناك معلمة post، أضف المعلمة الافتراضية لتحميل Yacine
+            ultraSpaceUrl += '?page=yacine';
+        }
+        
+        // إعادة التوجيه إلى UltraSpace
+        window.location.href = ultraSpaceUrl;
+        return true;
+    }
+    return false;
+}
+
+// ========== نهاية نظام إعادة التوجيه ==========
 
 // إعداد مستمعي الأحداث
 function setupEventListeners() {
@@ -759,4 +819,12 @@ function setupEventListeners() {
 }
 
 // بدء التطبيق عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', function() {
+    // أولاً: تحقق إذا كنا بحاجة لإعادة التوجيه (إذا فتحنا صفحة Yacine مباشرة)
+    if (checkAndRedirectIfNeeded()) {
+        return; // أوقف التنفيذ إذا تمت إعادة التوجيه
+    }
+    
+    // ثانياً: ابدأ التطبيق العادي
+    initApp();
+});
