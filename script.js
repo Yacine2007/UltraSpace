@@ -97,16 +97,14 @@ function loadYacineWithPost(postId) {
     }
 }
 
-// استمع لرسائل من الـ iframe (للتأكيد أو معلومات إضافية)
+// استمع لرسائل من الـ iframe
 window.addEventListener('message', function(event) {
     // تحقق من مصدر الرسالة لأسباب أمنية
     const allowedOrigins = [
         'https://yacine2007.github.io',
         window.location.origin,
         'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'https://yacine2007.github.io/UltraSpace',
-        'https://yacine2007.github.io/UltraSpace/'
+        'http://127.0.0.1:3000'
     ];
     
     let originAllowed = false;
@@ -124,15 +122,12 @@ window.addEventListener('message', function(event) {
     
     if (event.data && event.data.type === 'POST_LOADED') {
         console.log('Post loaded in iframe:', event.data.postId);
-        // يمكنك إضافة أي إجراء إضافي هنا مثل إشعار للمستخدم
     }
     
     if (event.data && event.data.type === 'SHARE_LINK_REQUEST') {
-        // إذا طلب الـ iframe رابط مشاركة
         const postId = event.data.postId;
         const shareLink = generatePostShareLink(postId);
         
-        // أرسل الرابط kembali إلى الـ iframe
         event.source.postMessage({
             type: 'SHARE_LINK_RESPONSE',
             shareLink: shareLink
@@ -193,13 +188,12 @@ function applyLanguage() {
     }
 }
 
-// تبديل الواجهة - تم التحديث مع الأنيميشن
+// تبديل الواجهة
 function switchView(viewId) {
     if (appState.currentView === viewId) return;
     
     const currentActiveView = document.querySelector('.view.active');
     
-    // إخفاء الواجهة الحالية مع أنيميشن
     if (currentActiveView) {
         currentActiveView.style.animation = 'fadeOut 0.2s ease';
         setTimeout(() => {
@@ -208,30 +202,25 @@ function switchView(viewId) {
         }, 150);
     }
     
-    // إظهار الواجهة الجديدة
     setTimeout(() => {
         if (views[viewId]) {
             views[viewId].classList.add('active');
             appState.currentView = viewId;
             
-            // تحديث السجل - فقط إذا كانت واجهة مختلفة
             const lastView = appState.viewHistory[appState.viewHistory.length - 1];
             if (lastView !== viewId) {
                 appState.viewHistory.push(viewId);
             }
         }
         
-        // تحديث أزرار التنقل
         navButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.view === viewId);
         });
         
-        // تحديث رأس الصفحة والشريط السفلي
         updateHeaderVisibility();
         updateBottomNavVisibility();
         updateViewTitle(viewId);
         
-        // ضبط ارتفاع الـ iframe إذا كانت الواجهة تحتوي على iframe
         if (viewId === 'aiChat' || viewId === 'externalPage') {
             setTimeout(() => {
                 const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
@@ -243,24 +232,18 @@ function switchView(viewId) {
     }, 150);
 }
 
-// تحديث رأس الصفحة - النسخة المحسنة
+// تحديث رأس الصفحة
 function updateHeaderVisibility() {
     const currentView = appState.currentView;
     const mainArea = document.querySelector('.main-area');
     
-    // احذف كلا الهيدرين أولاً لضمان بداية نظيفة
     const existingHomeHeader = document.getElementById('homeHeader');
     const existingViewHeader = document.getElementById('viewHeader');
     
-    if (existingHomeHeader) {
-        existingHomeHeader.remove();
-    }
-    if (existingViewHeader) {
-        existingViewHeader.remove();
-    }
+    if (existingHomeHeader) existingHomeHeader.remove();
+    if (existingViewHeader) existingViewHeader.remove();
     
     if (currentView === 'home') {
-        // في الواجهة الرئيسية: أضف homeHeader فقط
         const homeHeaderHTML = `
             <header class="header home-header" id="homeHeader">
                 <div class="header-content">
@@ -276,14 +259,12 @@ function updateHeaderVisibility() {
         `;
         mainArea.insertAdjacentHTML('afterbegin', homeHeaderHTML);
         
-        // أعد إضافة event listeners
         const profileAvatar = document.getElementById('profileAvatar');
         if (profileAvatar) {
             profileAvatar.addEventListener('click', openProfile);
         }
         
     } else {
-        // في جميع الواجهات الأخرى: أضف viewHeader فقط
         const viewHeaderHTML = `
             <header class="header view-header mobile-only" id="viewHeader">
                 <div class="header-content">
@@ -297,24 +278,20 @@ function updateHeaderVisibility() {
         `;
         mainArea.insertAdjacentHTML('afterbegin', viewHeaderHTML);
         
-        // أعد إضافة event listener
         const backBtn = document.getElementById('backBtn');
         if (backBtn) {
             backBtn.addEventListener('click', goBack);
         }
         
-        // تحديث العنوان
         const viewTitle = document.getElementById('viewTitle');
         if (viewTitle) {
             viewTitle.textContent = viewTitles[currentView] || 'View';
         }
     }
     
-    // تأكيد إظهار/إخفاء الهيدر المناسب
     forceHeaderVisibility();
 }
 
-// وظيفة إضافية لتأكيد إظهار/إخفاء الهيدر المناسب
 function forceHeaderVisibility() {
     const currentView = appState.currentView;
     const homeHeader = document.getElementById('homeHeader');
@@ -329,13 +306,11 @@ function forceHeaderVisibility() {
     }
 }
 
-// تحديث الشريط السفلي
 function updateBottomNavVisibility() {
     const isMobile = window.innerWidth <= 1024;
     const currentView = appState.currentView;
     
     if (isMobile && bottomNav) {
-        // في الهواتف: إظهار الشريط السفلي فقط في الواجهة الرئيسية
         if (currentView === 'home') {
             bottomNav.classList.remove('hidden');
             bottomNav.classList.add('visible');
@@ -346,17 +321,15 @@ function updateBottomNavVisibility() {
     }
 }
 
-// تحديث عنوان الواجهة
 function updateViewTitle(viewId) {
     if (viewTitle) {
         viewTitle.textContent = viewTitles[viewId] || 'View';
     }
 }
 
-// الرجوع للخلف
 function goBack() {
     if (appState.viewHistory.length > 1) {
-        appState.viewHistory.pop(); // إزالة الواجهة الحالية
+        appState.viewHistory.pop();
         const previousView = appState.viewHistory[appState.viewHistory.length - 1];
         switchView(previousView);
     } else {
@@ -364,15 +337,12 @@ function goBack() {
     }
 }
 
-// ========== إدارة الـ iframe المحسنة بشكل كامل ==========
-
 // إعداد أبعاد الـ iframe
 function setupIframeDimensions(iframe) {
     const isMobile = window.innerWidth <= 1024;
     const viewportHeight = window.innerHeight;
     
     if (isMobile) {
-        // في الهواتف: احسب الارتفاع المتاح مع مراعاة الهيدر والشريط السفلي
         const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
         const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 70;
         const availableHeight = viewportHeight - headerHeight - navHeight;
@@ -382,7 +352,6 @@ function setupIframeDimensions(iframe) {
         iframe.style.maxHeight = 'none';
         
     } else {
-        // في الحواسيب: استخدم الارتفاع الكامل
         const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
         const availableHeight = viewportHeight - headerHeight;
         
@@ -391,20 +360,16 @@ function setupIframeDimensions(iframe) {
     }
 }
 
-// ضبط ارتفاع الـ iframe تلقائياً بناءً على المحتوى
 function setupIframeResizing() {
     const iframes = document.querySelectorAll('.ai-iframe, .external-iframe');
     
     iframes.forEach(iframe => {
-        // إعداد الأبعاد الأولية
         setupIframeDimensions(iframe);
         
-        // استمع لتغيرات المحتوى في الـ iframe
         iframe.addEventListener('load', function() {
             adjustIframeHeight(this);
         });
         
-        // أيضاً استمع لأخطاء التحميل
         iframe.addEventListener('error', function() {
             console.error('Iframe failed to load:', this.src);
             setupIframeDimensions(this);
@@ -412,14 +377,11 @@ function setupIframeResizing() {
     });
 }
 
-// ضبط ارتفاع الـ iframe بناءً على المحتوى
 function adjustIframeHeight(iframe) {
     try {
-        // حاول الوصول لمحتوى الـ iframe
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         
         if (iframeDoc && iframeDoc.body) {
-            // احسب الارتفاع المطلوب
             const height = Math.max(
                 iframeDoc.body.scrollHeight,
                 iframeDoc.documentElement.scrollHeight,
@@ -429,7 +391,6 @@ function adjustIframeHeight(iframe) {
                 iframeDoc.documentElement.clientHeight
             );
             
-            // في الهواتف، استخدم الارتفاع المحسوب أو الارتفاع المتاح
             const isMobile = window.innerWidth <= 1024;
             if (isMobile) {
                 const viewportHeight = window.innerHeight;
@@ -437,24 +398,20 @@ function adjustIframeHeight(iframe) {
                 const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 70;
                 const availableHeight = viewportHeight - headerHeight - navHeight;
                 
-                // استخدم الارتفاع الأكبر بين المحتوى المتاح والارتفاع المتاح
                 const finalHeight = Math.max(height, availableHeight);
                 iframe.style.height = finalHeight + 'px';
             } else {
-                // في الحواسيب، استخدم ارتفاع المحتوى مع حد أقصى
                 const maxHeight = window.innerHeight - 100;
                 const finalHeight = Math.min(height, maxHeight);
                 iframe.style.height = finalHeight + 'px';
             }
         }
     } catch (error) {
-        // إذا فشل الوصول لمحتوى الـ iframe (مشكلة CORS)
         console.warn('Cannot access iframe content:', error);
         setupIframeDimensions(iframe);
     }
 }
 
-// تحديث أبعاد الـ iframe عند تغيير حجم النافذة
 function setupIframeResizeHandler() {
     let resizeTimeout;
     window.addEventListener('resize', function() {
@@ -463,7 +420,6 @@ function setupIframeResizeHandler() {
             const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
             if (activeIframe) {
                 setupIframeDimensions(activeIframe);
-                // أعِد ضبط الارتفاع بعد التغيير
                 setTimeout(() => {
                     adjustIframeHeight(activeIframe);
                 }, 100);
@@ -472,37 +428,26 @@ function setupIframeResizeHandler() {
     });
 }
 
-// ========== نظام تحميل الصفحات المحسّن مع إعادة التوجيه ==========
-
 // وظيفة محسنة لتحميل الصفحات الخارجية
 async function loadExternalPage(url, title = 'Page') {
     appState.isLoading = true;
     
     try {
-        // إذا كان الرابط لصفحة Yacine، تأكد من تحميلها داخل الـ iframe
-        if (url.includes('/Yacine/') || url === 'Yacine/index.html') {
-            url = 'Yacine/index.html'; // تأكد من المسار النسبي
-        }
-        
         if (externalIframe) {
-            // إعداد الـ iframe قبل التحميل
             setupIframeForLoading(externalIframe);
             
             externalIframe.src = url;
             viewTitles.externalPage = title;
             
-            // إعداد الـ iframe بعد التحميل
             externalIframe.onload = function() {
                 setupIframeDimensions(this);
                 setTimeout(() => {
                     adjustIframeHeight(this);
                     
-                    // بعد تحميل Yacine، تحقق إذا كان هناك منشور مطلوب
                     const urlParams = new URLSearchParams(window.location.search);
                     const postId = urlParams.get('post');
                     
                     if (postId && externalIframe.contentWindow) {
-                        // أرسل رسالة إلى الـ iframe لتحديد المنشور المطلوب
                         setTimeout(() => {
                             externalIframe.contentWindow.postMessage({
                                 type: 'SHOW_POST',
@@ -535,18 +480,15 @@ async function loadExternalPage(url, title = 'Page') {
     }
 }
 
-// إعداد الـ iframe للتحميل
 function setupIframeForLoading(iframe) {
-    iframe.style.opacity = '0.7'; // شفافية أثناء التحميل
+    iframe.style.opacity = '0.7';
     setupIframeDimensions(iframe);
     
-    // إزالة الشفافية بعد التحميل
     setTimeout(() => {
         iframe.style.opacity = '1';
     }, 500);
 }
 
-// فتح شات AI - نسخة محسنة
 function openAIChat() {
     if (aiIframe) {
         setupIframeForLoading(aiIframe);
@@ -566,62 +508,25 @@ function openAIChat() {
     loadExternalPage('Ai/AI.html', 'UltraSpace AI');
 }
 
-// فتح صفحة التحقق من الشارة الزرقاء
 function openBlueBadgeVerification() {
     loadExternalPage('Blue Badge Verification.html', 'Blue Badge Verification');
 }
 
-// فتح صفحة الملف الشخصي
 function openProfile() {
     loadExternalPage('Profile/Profile.html', 'Edit Profile');
 }
 
-// فتح مركز المساعدة
 function openHelpCenter() {
     loadExternalPage('HCA.html', 'Help Center');
 }
 
-// عرض واجهة الخطأ
 function showErrorView() {
     switchView('error');
     appState.isLoading = false;
 }
 
-// ========== نظام إعادة التوجيه التلقائي ==========
-
-// تحقق إذا كانت الصفحة الحالية هي صفحة Yacine المنفصلة وأعد التوجيه
-function checkAndRedirectIfNeeded() {
-    // إذا كنا في نافذة رئيسية (وليست iframe) وعنوان URL يحتوي على Yacine مباشرة
-    if (window.self === window.top && window.location.href.includes('/Yacine/index.html')) {
-        console.log('Yacine page opened directly, redirecting to UltraSpace...');
-        
-        // استخراج معلمات من URL الحالي
-        const currentUrl = new URL(window.location.href);
-        const postParam = currentUrl.searchParams.get('post');
-        
-        // بناء رابط UltraSpace الجديد
-        let ultraSpaceUrl = window.location.origin + window.location.pathname.replace('/Yacine/index.html', '/index.html');
-        
-        // إضافة معلمة post إذا كانت موجودة
-        if (postParam) {
-            ultraSpaceUrl += `?post=${postParam}`;
-        } else {
-            // إذا لم تكن هناك معلمة post، أضف المعلمة الافتراضية لتحميل Yacine
-            ultraSpaceUrl += '?page=yacine';
-        }
-        
-        // إعادة التوجيه إلى UltraSpace
-        window.location.href = ultraSpaceUrl;
-        return true;
-    }
-    return false;
-}
-
-// ========== نهاية نظام إعادة التوجيه ==========
-
 // إعداد مستمعي الأحداث
 function setupEventListeners() {
-    // التنقل بين الواجهات
     navButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -630,12 +535,10 @@ function setupEventListeners() {
         });
     });
     
-    // زر العودة
     if (backBtn) {
         backBtn.addEventListener('click', goBack);
     }
     
-    // تغيير اللغة
     if (languageSelect) {
         languageSelect.addEventListener('change', (e) => {
             appState.language = e.target.value;
@@ -643,29 +546,24 @@ function setupEventListeners() {
         });
     }
     
-    // الملف الشخصي
     if (profileAvatar) {
         profileAvatar.addEventListener('click', openProfile);
     }
     
-    // تسجيل الخروج
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to logout?')) {
                 alert('Logout successful!');
-                // في تطبيق حقيقي، سيتم إعادة التوجيه إلى صفحة تسجيل الدخول
             }
         });
     }
     
-    // العودة للصفحة الرئيسية من واجهة الخطأ
     if (errorHomeBtn) {
         errorHomeBtn.addEventListener('click', () => {
             switchView('home');
         });
     }
     
-    // عناصر الرسائل
     messageItems.forEach(item => {
         item.addEventListener('click', () => {
             const userType = item.getAttribute('data-user');
@@ -678,9 +576,7 @@ function setupEventListeners() {
         });
     });
     
-    // إضافة مستمعي الأحداث للستوريات والصفحات
     document.addEventListener('click', (e) => {
-        // التعامل مع نقرات الستوريات
         if (e.target.closest('.story-item')) {
             const storyItem = e.target.closest('.story-item');
             const storyName = storyItem.querySelector('.story-name').textContent;
@@ -688,10 +584,8 @@ function setupEventListeners() {
             if (storyName === 'Yacine') {
                 loadExternalPage('Yacine/index.html', 'Yacine');
             }
-            // يمكن إضافة المزيد من الستوريات هنا
         }
         
-        // التعامل مع نقرات الصفحات المقترحة
         if (e.target.closest('.page-item')) {
             const pageItem = e.target.closest('.page-item');
             const pageName = pageItem.querySelector('.page-name').textContent;
@@ -706,10 +600,8 @@ function setupEventListeners() {
             } else if (pageName === 'UltraSpace') {
                 loadExternalPage('BYUS/USP.html', 'UltraSpace');
             }
-            // يمكن إضافة المزيد من الصفحات هنا
         }
         
-        // عناصر الإعدادات
         if (e.target.closest('.settings-item[data-page]')) {
             const settingsItem = e.target.closest('.settings-item[data-page]');
             const pageUrl = settingsItem.getAttribute('data-page');
@@ -729,7 +621,6 @@ function setupEventListeners() {
         }
     });
     
-    // تحديث الرأس والشريط السفلي عند تغيير حجم النافذة
     let resizeTimeout;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
@@ -737,7 +628,6 @@ function setupEventListeners() {
             updateHeaderVisibility();
             updateBottomNavVisibility();
             
-            // تحديث أبعاد الـ iframe النشط
             const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
             if (activeIframe) {
                 setupIframeDimensions(activeIframe);
@@ -745,86 +635,33 @@ function setupEventListeners() {
         }, 250);
     });
     
-    // حل نهائي: مراقبة وإصلاح أي مشاكل في الـ headers
     const headerFixInterval = setInterval(() => {
         const currentView = appState.currentView;
         const isMobile = window.innerWidth <= 1024;
         
-        // إصلاح homeHeader
         const homeHeader = document.getElementById('homeHeader');
         if (homeHeader) {
             if (isMobile) {
-                if (currentView === 'home') {
-                    if (homeHeader.style.display !== 'flex') {
-                        homeHeader.style.display = 'flex';
-                    }
-                } else {
-                    if (homeHeader.style.display !== 'none') {
-                        homeHeader.style.display = 'none';
-                    }
-                }
+                homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
             } else {
-                if (homeHeader.style.display !== 'flex') {
-                    homeHeader.style.display = 'flex';
-                }
+                homeHeader.style.display = 'flex';
             }
         }
         
-        // إصلاح viewHeader - يظهر في جميع الواجهات ما عدا home
         const viewHeader = document.getElementById('viewHeader');
         if (viewHeader) {
             if (isMobile) {
-                if (currentView === 'home') {
-                    if (viewHeader.style.display !== 'none') {
-                        viewHeader.style.display = 'none';
-                    }
-                } else {
-                    if (viewHeader.style.display !== 'flex') {
-                        viewHeader.style.display = 'flex';
-                    }
-                }
+                viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
             } else {
-                if (viewHeader.style.display !== 'none') {
-                    viewHeader.style.display = 'none';
-                }
+                viewHeader.style.display = 'none';
             }
         }
     }, 100);
     
-    // تنظيف الـ interval عندما يتم إغلاق الصفحة
     window.addEventListener('beforeunload', () => {
         clearInterval(headerFixInterval);
     });
-    
-    // منع السلوك الافتراضي للأزرار
-    document.addEventListener('touchstart', function(e) {
-        if (e.target.classList.contains('nav-btn') || 
-            e.target.classList.contains('back-btn') ||
-            e.target.classList.contains('settings-item') ||
-            e.target.classList.contains('story-item') ||
-            e.target.classList.contains('page-item')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-    
-    // تحسين تجربة المستخدم على الهواتف
-    document.addEventListener('touchmove', function(e) {
-        if (e.target.classList.contains('nav-btn') || 
-            e.target.classList.contains('back-btn') ||
-            e.target.classList.contains('story-item') ||
-            e.target.classList.contains('page-item')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
 }
 
-// بدء التطبيق عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    // أولاً: تحقق إذا كنا بحاجة لإعادة التوجيه (إذا فتحنا صفحة Yacine مباشرة)
-    if (checkAndRedirectIfNeeded()) {
-        return; // أوقف التنفيذ إذا تمت إعادة التوجيه
-    }
-    
-    // ثانياً: ابدأ التطبيق العادي
-    initApp();
-});
+// بدء التطبيق
+document.addEventListener('DOMContentLoaded', initApp);
