@@ -129,6 +129,7 @@
             gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
+            align-items: center;
         }
 
         .btn {
@@ -181,25 +182,23 @@
             background-color: rgba(0, 175, 255, 0.1);
         }
 
-        /* زر التواصل في البروفايل */
+        /* زر التواصل - نفس تصميم زر المتابعة */
         .contact-btn {
-            background: linear-gradient(135deg, #00AFFF, #8338ec);
+            background-color: #00AFFF;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
+            padding: 10px 20px;
+            border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(0, 175, 255, 0.3);
         }
 
         .contact-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 175, 255, 0.4);
+            background-color: #166fe5;
         }
 
         /* Profile Details */
@@ -541,6 +540,16 @@
             .profile-details {
                 grid-template-columns: 1fr;
             }
+            
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
 
         @media (max-width: 480px) {
@@ -555,15 +564,6 @@
             .profile-picture {
                 width: 120px;
                 height: 120px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .btn {
-                justify-content: center;
             }
             
             .post-actions {
@@ -620,8 +620,8 @@
                         <div style="width: 80px; height: 80px; margin: 0 auto 20px; animation: pulse 1.5s infinite;">
                             <img src="https://yacine2007.github.io/UltraSpace/logo/favicon.png" alt="UltraSpace" style="width: 100%; height: 100%;">
                         </div>
-                        <h2>جاري التوجيه إلى UltraSpace...</h2>
-                        <p>يرجى الانتظار أثناء تحميل المحتوى داخل المنصة</p>
+                        <h2>Redirecting to UltraSpace...</h2>
+                        <p>Please wait while we load your content inside the platform</p>
                     </div>
                 </div>
                 <style>
@@ -653,15 +653,15 @@
                     <i class="fas fa-users"></i> <span id="followerCount">1K</span> followers
                 </div>
                 <div class="user-bio">
-                    My officiel account on my plateforme UltraSpace
+                    My official account on my platform UltraSpace
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-primary" id="followBtn">
                         <i class="fas fa-user-check"></i> Following
                     </button>
-                    <!-- زر التواصل الجديد -->
-                    <button class="contact-btn" id="contactBtn" onclick="openContactPage()">
-                        <i class="fas fa-comment-dots"></i> تواصل معي
+                    <!-- زر التواصل - نفس تصميم زر المتابعة -->
+                    <button class="btn btn-primary contact-btn" id="contactBtn">
+                        <i class="fas fa-comment-dots"></i> Contact Me
                     </button>
                 </div>
             </div>
@@ -739,7 +739,7 @@
                         <p>وهذا هو الرابط نفسه:</p>
                         <div style="text-align: center; margin: 15px 0;">
                             <a href="https://yacine2007.github.io/Yacine2007/communication.html" class="btn btn-link" target="_blank">
-                                <i class="fas fa-external-link-alt"></i> زر التواصل
+                                <i class="fas fa-external-link-alt"></i> Contact Link
                             </a>
                         </div>
                         
@@ -850,6 +850,7 @@
         const shareButtons = document.querySelectorAll('.share-btn');
         const shareToast = document.getElementById('shareToast');
         const contactBtn = document.getElementById('contactBtn');
+        const followBtn = document.getElementById('followBtn');
         
         // وظيفة فتح صفحة التواصل
         function openContactPage() {
@@ -1046,12 +1047,14 @@
             });
         }
         
-        // إظهار منشور واحد فقط وإخفاء الآخرين
+        // إظهار منشور واحد فقط وإخفاء الآخرين والتمرير إليه
         function showSinglePost(postId) {
             const allPosts = document.querySelectorAll('.post');
             const targetPost = document.getElementById(postId);
             
             if (targetPost) {
+                console.log('🎯 Showing single post:', postId);
+                
                 // إخفاء جميع المنشورات
                 allPosts.forEach(post => {
                     post.style.display = 'none';
@@ -1060,6 +1063,14 @@
                 // إظهار المنشور المطلوب فقط
                 targetPost.style.display = 'block';
                 
+                // التمرير إلى المنشور بعد تأخير بسيط
+                setTimeout(() => {
+                    targetPost.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+                
                 // تمرير المعلومات للنافذة الرئيسية
                 if (window.parent !== window.self) {
                     window.parent.postMessage({
@@ -1067,23 +1078,71 @@
                         postId: postId
                     }, '*');
                 }
+            } else {
+                console.error('❌ Post not found:', postId);
             }
         }
         
-        // تحقق من معلمات URL عند التحميل
+        // تحقق من معلمات URL عند التحميل وعرض المنشور المحدد
         function checkUrlParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('post');
             
             if (postId) {
+                console.log('📝 URL parameter detected, showing post:', postId);
                 showSinglePost(postId);
+            } else {
+                console.log('ℹ️ No specific post requested, showing all posts');
+            }
+        }
+
+        // إعداد event listeners
+        function setupEventListeners() {
+            // زر التواصل
+            if (contactBtn) {
+                contactBtn.addEventListener('click', openContactPage);
+            }
+            
+            // زر المتابعة
+            if (followBtn) {
+                followBtn.addEventListener('click', function() {
+                    if (this.classList.contains('btn-primary')) {
+                        this.innerHTML = '<i class="fas fa-user-plus"></i> Follow';
+                        this.classList.remove('btn-primary');
+                        this.classList.add('btn-secondary');
+                    } else {
+                        this.innerHTML = '<i class="fas fa-user-check"></i> Following';
+                        this.classList.remove('btn-secondary');
+                        this.classList.add('btn-primary');
+                    }
+                });
             }
         }
         
         // Initialize functions
-        calculateAge();
-        calculatePostTime();
-        checkUrlParameters();
+        function init() {
+            calculateAge();
+            calculatePostTime();
+            setupEventListeners();
+            checkUrlParameters();
+            
+            // إرسال رسالة أن الصفحة جاهزة
+            if (window.parent !== window.self) {
+                setTimeout(() => {
+                    window.parent.postMessage({
+                        type: 'PAGE_READY',
+                        url: window.location.href
+                    }, '*');
+                }, 500);
+            }
+        }
+
+        // بدء التطبيق عندما تكون الصفحة جاهزة
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
