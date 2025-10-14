@@ -518,6 +518,12 @@
             line-height: 1.6;
         }
 
+        /* Highlight for targeted post */
+        .post.targeted {
+            border: 2px solid #00AFFF;
+            box-shadow: 0 0 20px rgba(0, 175, 255, 0.3);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .cover-photo {
@@ -647,6 +653,7 @@
                 </div>
                 <div class="user-name">
                     <h1>Yacine Ben Mokrane</h1>
+                    <!-- الشارة الزرقاء في الجهة الأخرى -->
                     <i class="fas fa-check-circle verification-badge"></i>
                 </div>
                 <div class="follower-count">
@@ -773,7 +780,123 @@
                     </div>
                 </div>
                 <div class="comments-section">
-                    <!-- التعليقات تبقى كما هي -->
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Sarah">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Sarah Ali</div>
+                            <div class="comment-text text-rtl">فكرة رائعة! هذا سيساعد الجميع في التواصل معك بسهولة.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>24</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Karim">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Karim B.</div>
+                            <div class="comment-text text-rtl">لقد جربت الرابط وهو يعمل بشكل ممتاز! شكراً على هذه الفكرة الذكية.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>18</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Ahmed">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Ahmed M.</div>
+                            <div class="comment-text text-rtl">فعلاً كانت هناك مشكلة في التواصل معك. شكراً على هذا الحل البسيط والفعال!</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>15</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Marie">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Marie L.</div>
+                            <div class="comment-text text-ltr">J'ai scanné le code QR et cela fonctionne parfaitement! Merci pour cette solution pratique.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>12</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="John">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">John D.</div>
+                            <div class="comment-text text-ltr">This is a brilliant solution! I've been having trouble finding your contact info. Thanks for making it easier.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>10</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Sophie">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Sophie K.</div>
+                            <div class="comment-text text-ltr">I'm so glad you found a solution! This QR code idea is genius and will help so many people connect with you.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>8</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comments-notice">
+                        Comments have been temporarily disabled. All comments are displayed above.
+                    </div>
                 </div>
             </div>
             
@@ -815,7 +938,199 @@
                     </div>
                 </div>
                 <div class="comments-section">
-                    <!-- التعليقات تبقى كما هي -->
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Sarah">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Sarah Ali</div>
+                            <div class="comment-text text-ltr">Amazing work, Yacine! Proud of what you're accomplishing!</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>12</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Karim">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Karim B.</div>
+                            <div class="comment-text text-ltr">Can't wait to try it out! When will it be available for public testing?</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>8</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Ahmed">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Ahmed M.</div>
+                            <div class="comment-text text-rtl">مبروك ياسين! أتمنى لك التوفيق في مشروعك الجديد.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>15</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Marie">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Marie L.</div>
+                            <div class="comment-text text-ltr">Félicitations pour cette nouvelle plateforme ! J'ai hâte de la découvrir.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>6</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="John">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">John D.</div>
+                            <div class="comment-text text-ltr">This is a great initiative! Looking forward to seeing what UltraSpace has to offer.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>10</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Sophie">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Sophie K.</div>
+                            <div class="comment-text text-ltr">I'm excited about this new platform! Good luck with the development.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>7</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Mohamed">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Mohamed T.</div>
+                            <div class="comment-text text-rtl">عمل رائع يا ياسين! نتمنى لك النجاح والتوفيق في هذا المشروع الطموح.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>14</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Emma">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Emma W.</div>
+                            <div class="comment-text text-ltr">This sounds promising! Can you share more details about the features?</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>9</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Pierre">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Pierre G.</div>
+                            <div class="comment-text text-ltr">Bravo pour cette initiative ! J'espère que cela deviendra une alternative sérieuse.</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>5</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment">
+                        <div class="comment-profile-pic">
+                            <img src="https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Lina">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-user">Lina R.</div>
+                            <div class="comment-text text-rtl">أتمنى لك النجاح والتوفيق في مشروعك الجديد. بالتأكيد سيكون منصة رائعة!</div>
+                            <div class="comment-actions">
+                                <div class="comment-action like-comment">
+                                    <i class="far fa-heart"></i>
+                                    <span>11</span>
+                                </div>
+                                <div class="comment-action reply-comment">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comments-notice">
+                        Comments have been temporarily disabled. All comments are displayed above.
+                    </div>
                 </div>
             </div>
         </section>
@@ -1019,7 +1334,7 @@
             
             if (event.data && event.data.type === 'SHOW_POST') {
                 const postId = event.data.postId;
-                showSinglePost(postId);
+                scrollToPost(postId);
             }
         });
         
@@ -1047,29 +1362,33 @@
             });
         }
         
-        // إظهار منشور واحد فقط وإخفاء الآخرين والتمرير إليه
-        function showSinglePost(postId) {
-            const allPosts = document.querySelectorAll('.post');
+        // التمرير إلى منشور محدد وإبرازه
+        function scrollToPost(postId) {
             const targetPost = document.getElementById(postId);
             
             if (targetPost) {
-                console.log('🎯 Showing single post:', postId);
+                console.log('🎯 Scrolling to post:', postId);
                 
-                // إخفاء جميع المنشورات
-                allPosts.forEach(post => {
-                    post.style.display = 'none';
+                // إزالة التمييز من جميع المنشورات
+                document.querySelectorAll('.post').forEach(post => {
+                    post.classList.remove('targeted');
                 });
                 
-                // إظهار المنشور المطلوب فقط
-                targetPost.style.display = 'block';
+                // إضافة التمييز للمنشور المطلوب
+                targetPost.classList.add('targeted');
                 
-                // التمرير إلى المنشور بعد تأخير بسيط
+                // التمرير إلى المنشور
                 setTimeout(() => {
                     targetPost.scrollIntoView({ 
                         behavior: 'smooth',
                         block: 'start'
                     });
                 }, 100);
+                
+                // إزالة التمييز بعد 5 ثواني
+                setTimeout(() => {
+                    targetPost.classList.remove('targeted');
+                }, 5000);
                 
                 // تمرير المعلومات للنافذة الرئيسية
                 if (window.parent !== window.self) {
@@ -1083,14 +1402,17 @@
             }
         }
         
-        // تحقق من معلمات URL عند التحميل وعرض المنشور المحدد
+        // تحقق من معلمات URL عند التحميل والتمرير إلى المنشور المحدد
         function checkUrlParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('post');
             
             if (postId) {
-                console.log('📝 URL parameter detected, showing post:', postId);
-                showSinglePost(postId);
+                console.log('📝 URL parameter detected, scrolling to post:', postId);
+                // تأخير بسيط لضمان تحميل الصفحة بالكامل
+                setTimeout(() => {
+                    scrollToPost(postId);
+                }, 500);
             } else {
                 console.log('ℹ️ No specific post requested, showing all posts');
             }
