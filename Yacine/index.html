@@ -100,6 +100,7 @@
             justify-content: center;
             gap: 8px;
             margin-bottom: 10px;
+            position: relative;
         }
 
         .user-name h1 {
@@ -130,6 +131,7 @@
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
+            width: 100%;
         }
 
         .btn {
@@ -142,6 +144,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex: 1;
+            min-width: 0;
+            justify-content: center;
         }
 
         .btn-primary {
@@ -195,10 +200,31 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex: 1;
+            min-width: 0;
+            justify-content: center;
         }
 
         .contact-btn:hover {
             background-color: #166fe5;
+        }
+
+        /* زر المتابعة الثابت */
+        .follow-btn {
+            background-color: #00AFFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
+            justify-content: center;
+            opacity: 0.9;
         }
 
         /* Profile Details */
@@ -274,6 +300,9 @@
 
         .post-user-name {
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .post-time {
@@ -552,7 +581,7 @@
                 width: 100%;
             }
             
-            .btn {
+            .btn, .contact-btn, .follow-btn {
                 width: 100%;
                 justify-content: center;
             }
@@ -597,16 +626,8 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const postId = urlParams.get('post');
                 
-                // أنشئ رابط UltraSpace الجديد
-                let ultraSpaceUrl = 'https://yacine2007.github.io/UltraSpace/index.html';
-                
-                // أضف معلمة post إذا كانت موجودة
-                if (postId) {
-                    ultraSpaceUrl += `?post=${postId}`;
-                } else {
-                    // إذا لم يكن هناك post، احمل صفحة Yacine بشكل عادي في UltraSpace
-                    ultraSpaceUrl += '?page=yacine';
-                }
+                // أنشئ رابط UltraSpace الجديد - بدون معلمة post
+                let ultraSpaceUrl = 'https://yacine2007.github.io/UltraSpace/index.html?page=yacine';
                 
                 console.log('🎯 Redirecting to:', ultraSpaceUrl);
                 
@@ -652,9 +673,9 @@
                     <img src="Yacine.png" alt="Yacine Ben Mokrane">
                 </div>
                 <div class="user-name">
-                    <h1>Yacine Ben Mokrane</h1>
-                    <!-- الشارة الزرقاء في نهاية الاسم -->
+                    <!-- الشارة الزرقاء في الجهة المعاكسة (اليسار) -->
                     <i class="fas fa-check-circle verification-badge"></i>
+                    <h1>Yacine Ben Mokrane</h1>
                 </div>
                 <div class="follower-count">
                     <i class="fas fa-users"></i> <span id="followerCount">1K</span> followers
@@ -663,11 +684,12 @@
                     My official account on my platform UltraSpace
                 </div>
                 <div class="action-buttons">
-                    <button class="btn btn-primary" id="followBtn">
+                    <!-- زر المتابعة الثابت وغير القابل للإلغاء -->
+                    <button class="follow-btn" id="followBtn">
                         <i class="fas fa-user-check"></i> Following
                     </button>
                     <!-- زر التواصل - نفس تصميم زر المتابعة -->
-                    <button class="btn btn-primary contact-btn" id="contactBtn">
+                    <button class="contact-btn" id="contactBtn">
                         <i class="fas fa-comment-dots"></i> Contact Me
                     </button>
                 </div>
@@ -732,7 +754,10 @@
                         <img src="Yacine.png" alt="Yacine Ben Mokrane">
                     </div>
                     <div class="post-user-info">
-                        <div class="post-user-name">Yacine Ben Mokrane <i style="font-size: 0.8rem;" class="fas fa-check-circle verification-badge"></i></div>
+                        <div class="post-user-name">
+                            <i style="font-size: 0.8rem;" class="fas fa-check-circle verification-badge"></i>
+                            Yacine Ben Mokrane
+                        </div>
                         <div class="post-time" id="oldPostTime">September 15, 2025</div>
                     </div>
                     <!-- تم إزالة زر المشاركة العلوي -->
@@ -907,7 +932,10 @@
                         <img src="Yacine.png" alt="Yacine Ben Mokrane">
                     </div>
                     <div class="post-user-info">
-                        <div class="post-user-name">Yacine Ben Mokrane <i style="font-size: 0.8rem;" class="fas fa-check-circle verification-badge"></i></div>
+                        <div class="post-user-name">
+                            <i style="font-size: 0.8rem;" class="fas fa-check-circle verification-badge"></i>
+                            Yacine Ben Mokrane
+                        </div>
                         <div class="post-time" id="postTime">3 hours ago</div>
                     </div>
                     <!-- تم إزالة زر المشاركة العلوي -->
@@ -1305,16 +1333,18 @@
             button.addEventListener('click', function() {
                 const postId = this.getAttribute('data-post');
                 
-                // اطلب رابط المشاركة من النافذة الرئيسية
+                // إنشاء رابط المشاركة بدون معلمة post
+                const postLink = `${window.location.origin}${window.location.pathname}`;
+                
+                // نسخ الرابط إلى الحافظة
+                copyToClipboard(postLink);
+                
+                // إرسال رسالة للنافذة الرئيسية إذا كنا داخل iframe
                 if (window.parent !== window.self) {
                     window.parent.postMessage({
-                        type: 'SHARE_LINK_REQUEST',
-                        postId: postId
+                        type: 'SHARE_LINK_RESPONSE',
+                        shareLink: postLink
                     }, '*');
-                } else {
-                    // إذا كنا في نافذة مستقلة، أنشئ الرابط يدوياً
-                    const postLink = `${window.location.origin}${window.location.pathname}?post=${postId}`;
-                    copyToClipboard(postLink);
                 }
             });
         });
@@ -1329,10 +1359,6 @@
             
             if (!allowedOrigins.includes(event.origin)) {
                 return;
-            }
-            
-            if (event.data && event.data.type === 'SHARE_LINK_RESPONSE') {
-                copyToClipboard(event.data.shareLink);
             }
             
             if (event.data && event.data.type === 'SHOW_POST') {
@@ -1431,31 +1457,17 @@
                 contactBtn.addEventListener('click', openContactPage);
             }
             
-            // زر المتابعة
+            // زر المتابعة الثابت - لا يمكن النقر عليه
             if (followBtn) {
-                followBtn.addEventListener('click', function() {
-                    if (this.classList.contains('btn-primary')) {
-                        this.innerHTML = '<i class="fas fa-user-plus"></i> Follow';
-                        this.classList.remove('btn-primary');
-                        this.classList.add('btn-secondary');
-                    } else {
-                        this.innerHTML = '<i class="fas fa-user-check"></i> Following';
-                        this.classList.remove('btn-secondary');
-                        this.classList.add('btn-primary');
-                    }
+                followBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // لا تفعل شيئاً - الزر ثابت
                 });
-            }
-        }
-        
-        // إعادة تعيين معلمة post في الرابط بعد التمرير
-        function resetPostParameter() {
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            if (urlParams.has('post')) {
-                // إزالة معلمة post من الرابط بدون إعادة تحميل الصفحة
-                const newUrl = window.location.pathname;
-                window.history.replaceState({}, document.title, newUrl);
-                console.log('🔄 Post parameter removed from URL');
+                
+                // إزالة تأثير hover للزر الثابت
+                followBtn.style.cursor = 'default';
+                followBtn.style.pointerEvents = 'none';
             }
         }
         
@@ -1475,11 +1487,6 @@
                     }, '*');
                 }, 500);
             }
-            
-            // إعادة تعيين معلمة post بعد فترة للتأكد من اكتمال التمرير
-            setTimeout(() => {
-                resetPostParameter();
-            }, 2000);
         }
 
         // بدء التطبيق عندما تكون الصفحة جاهزة
