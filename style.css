@@ -493,31 +493,37 @@ body {
 }
 
 /* ========== AI Chat View & External Page View - إصلاح كامل وجذري ========== */
+/* تحسينات الـ iframe */
+.ai-iframe, .external-iframe {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    background: white;
+    transition: all 0.3s ease;
+}
 
-/* الحاوية الرئيسية للـ iframe */
-.ai-chat-container,
-.external-page-container {
+/* تحسينات خاصة لصفحات AI والشارة والدعم */
+.ai-chat-container, .external-page-container {
     width: 100%;
     height: 100%;
-    border-radius: 0;
-    overflow: hidden;
-    background-color: var(--background-color);
-    border: none;
-    margin: 0;
-    padding: 0;
     display: flex;
     flex-direction: column;
 }
 
-/* الـ iframe نفسه - الإصلاح النهائي */
-.ai-iframe,
-.external-iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background-color: var(--background-color);
-    display: block;
-    flex: 1;
+
+/* تحسينات للشاشات الكبيرة */
+@media (min-width: 1025px) {
+    .ai-iframe, .external-iframe {
+        min-height: 600px;
+        max-height: none !important;
+    }
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 1024px) {
+    .ai-iframe, .external-iframe {
+        min-height: 500px;
+    }
 }
 
 /* إصلاح كامل للمحتوى في واجهات الـ iframe */
