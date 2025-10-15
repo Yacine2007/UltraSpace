@@ -4,7 +4,7 @@ const appState = {
     language: localStorage.getItem('language') || 'en',
     isLoading: false,
     viewHistory: ['home'],
-    isLoggedIn: localStorage.getItem('isLoggedIn') === 'true'
+    isAuthenticated: false
 };
 
 // عناصر DOM
@@ -18,7 +18,8 @@ const views = {
     settings: document.getElementById('settingsView'),
     aiChat: document.getElementById('aiChatView'),
     externalPage: document.getElementById('externalPageView'),
-    error: document.getElementById('errorView')
+    error: document.getElementById('errorView'),
+    auth: document.getElementById('authView') // سيتم إنشاؤه ديناميكياً
 };
 
 const homeHeader = document.getElementById('homeHeader');
@@ -42,23 +43,154 @@ const viewTitles = {
     settings: 'Settings',
     aiChat: 'UltraSpace AI',
     externalPage: 'Page',
-    error: 'Error'
+    error: 'Error',
+    auth: 'Authentication'
 };
 
 // ========== نظام المصادقة ==========
 
-// التحقق من تسجيل الدخول
-function checkAuthentication() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+// التحقق من تسجيل الدخول في B.Y PRO Accounts
+function checkBYPROAuthentication() {
+    console.log('🔍 Checking B.Y PRO authentication...');
     
-    if (!isLoggedIn) {
-        // توجيه إلى صفحة تسجيل الدخول
-        window.location.href = 'https://yacine2007.github.io/secure-auth-app/login.html';
+    const userData = localStorage.getItem('bypro_user');
+    
+    if (userData) {
+        try {
+            const user = JSON.parse(userData);
+            console.log('✅ Found B.Y PRO user data:', user);
+            
+            if (user.id && user.password) {
+                appState.isAuthenticated = true;
+                console.log('🎉 User is authenticated with B.Y PRO');
+                return true;
+            } else {
+                console.log('❌ Invalid user data structure');
+                localStorage.removeItem('bypro_user');
+                appState.isAuthenticated = false;
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ Error parsing user data:', error);
+            localStorage.removeItem('bypro_user');
+            appState.isAuthenticated = false;
+            return false;
+        }
+    } else {
+        console.log('❌ No B.Y PRO user data found');
+        appState.isAuthenticated = false;
         return false;
     }
-    
-    return true;
 }
+
+// إنشاء واجهة المصادقة
+function createAuthView() {
+    const mainContent = document.querySelector('.main-content');
+    
+    const authViewHTML = `
+        <div class="view" id="authView">
+            <div class="view-content">
+                <div class="auth-container">
+                    <iframe 
+                        src="https://yacine2007.github.io/secure-auth-app/login.html" 
+                        class="auth-iframe" 
+                        id="authIframe"
+                        style="width: 100%; height: 100vh; border: none;"
+                    ></iframe>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    mainContent.insertAdjacentHTML('beforeend', authViewHTML);
+    views.auth = document.getElementById('authView');
+    
+    // إعداد مستمع للرسائل من iframe المصادقة
+    setupAuthIframeListener();
+}
+
+// إعداد مستمع لرسائل iframe المصادقة
+function setupAuthIframeListener() {
+    window.addEventListener('message', function(event) {
+        // التحقق من مصدر الرسالة
+        const allowedOrigins = [
+            'https://yacine2007.github.io',
+            window.location.origin
+        ];
+        
+        if (!allowedOrigins.includes(event.origin)) {
+            return;
+        }
+        
+        // إذا كانت هناك بيانات مستخدم (من خلال localStorage)
+        if (event.data && event.data.type === 'USER_AUTHENTICATED') {
+            console.log('🔑 User authenticated message received');
+            handleSuccessfulAuth();
+        }
+    });
+    
+    // فحص دوري لحالة المصادقة
+    const checkAuthInterval = setInterval(() => {
+        if (checkBYPROAuthentication()) {
+            handleSuccessfulAuth();
+            clearInterval(checkAuthInterval);
+        }
+    }, 1000);
+}
+
+// التعامل مع المصادقة الناجحة
+function handleSuccessfulAuth() {
+    console.log('✅ Authentication successful, switching to home view');
+    appState.isAuthenticated = true;
+    
+    // إخفاء واجهة المصادقة
+    if (views.auth) {
+        views.auth.style.display = 'none';
+    }
+    
+    // التبديل إلى الواجهة الرئيسية
+    switchView('home');
+    
+    // تحديث واجهة المستخدم
+    updateHeaderVisibility();
+    updateBottomNavVisibility();
+    displayUserInfo();
+}
+
+// عرض معلومات المستخدم
+function displayUserInfo() {
+    const user = getAuthenticatedUser();
+    if (user) {
+        console.log('👤 Displaying user info:', user);
+        
+        const profileAvatar = document.getElementById('profileAvatar');
+        if (profileAvatar && user.image) {
+            profileAvatar.src = user.image;
+            profileAvatar.alt = user.name || `User ${user.id}`;
+        }
+    }
+}
+
+// الحصول على بيانات المستخدم المصادق
+function getAuthenticatedUser() {
+    const userData = localStorage.getItem('bypro_user');
+    if (userData) {
+        return JSON.parse(userData);
+    }
+    return null;
+}
+
+// تسجيل الخروج
+function logout() {
+    console.log('🚪 Logging out...');
+    localStorage.removeItem('bypro_user');
+    appState.isAuthenticated = false;
+    
+    // إعادة تحميل الصفحة للعودة إلى واجهة المصادقة
+    window.location.reload();
+}
+
+// ========== نهاية نظام المصادقة ==========
 
 // ========== نظام مشاركة المنشورات والروابط المباشرة ==========
 
@@ -123,7 +255,6 @@ function resetPostParameter() {
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.has('post')) {
-        // إزالة معلمة post من الرابط بدون إعادة تحميل الصفحة
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
         console.log('🔄 Post parameter removed from URL');
@@ -184,9 +315,20 @@ function generatePostShareLink(postId) {
 // تهيئة التطبيق
 function initApp() {
     // أولاً: التحقق من المصادقة
-    if (!checkAuthentication()) {
+    const isAuthenticated = checkBYPROAuthentication();
+    
+    if (!isAuthenticated) {
+        console.log('🔐 User not authenticated, showing auth view');
+        // إنشاء واجهة المصادقة
+        createAuthView();
+        
+        // إظهار واجهة المصادقة مباشرة
+        showAuthView();
         return;
     }
+    
+    // إذا كان المستخدم مصادقاً، متابعة التحميل العادي
+    console.log('✅ User authenticated, loading UltraSpace normally');
     
     // ثانياً: تحقق من معلمات URL للروابط المباشرة
     const hasUrlParams = handleUrlParameters();
@@ -219,6 +361,35 @@ function initApp() {
     }
 
     applyLanguage();
+    displayUserInfo();
+}
+
+// إظهار واجهة المصادقة
+function showAuthView() {
+    loadingScreen.remove();
+    appContainer.style.display = 'block';
+    
+    // إخفاء جميع الواجهات الأخرى
+    Object.values(views).forEach(view => {
+        if (view && view.id !== 'authView') {
+            view.style.display = 'none';
+        }
+    });
+    
+    // إظهار واجهة المصادقة
+    if (views.auth) {
+        views.auth.style.display = 'block';
+        views.auth.classList.add('active');
+    }
+    
+    // إخفاء الهيدر والتنقل
+    const homeHeader = document.getElementById('homeHeader');
+    const viewHeader = document.getElementById('viewHeader');
+    const bottomNav = document.getElementById('bottomNav');
+    
+    if (homeHeader) homeHeader.style.display = 'none';
+    if (viewHeader) viewHeader.style.display = 'none';
+    if (bottomNav) bottomNav.style.display = 'none';
 }
 
 // تطبيق اللغة
@@ -234,6 +405,12 @@ function applyLanguage() {
 // تبديل الواجهة
 function switchView(viewId) {
     if (appState.currentView === viewId) return;
+    
+    // إذا لم يكن المستخدم مصادقاً، لا تسمح بالتبديل
+    if (!appState.isAuthenticated && viewId !== 'auth') {
+        console.log('🚫 User not authenticated, cannot switch views');
+        return;
+    }
     
     const currentActiveView = document.querySelector('.view.active');
     
@@ -277,6 +454,15 @@ function switchView(viewId) {
 
 // تحديث رأس الصفحة
 function updateHeaderVisibility() {
+    // إذا لم يكن المستخدم مصادقاً، لا تعرض الهيدر
+    if (!appState.isAuthenticated) {
+        const homeHeader = document.getElementById('homeHeader');
+        const viewHeader = document.getElementById('viewHeader');
+        if (homeHeader) homeHeader.style.display = 'none';
+        if (viewHeader) viewHeader.style.display = 'none';
+        return;
+    }
+    
     const currentView = appState.currentView;
     const mainArea = document.querySelector('.main-area');
     
@@ -350,6 +536,12 @@ function forceHeaderVisibility() {
 }
 
 function updateBottomNavVisibility() {
+    // إذا لم يكن المستخدم مصادقاً، لا تعرض التنقل السفلي
+    if (!appState.isAuthenticated) {
+        if (bottomNav) bottomNav.style.display = 'none';
+        return;
+    }
+    
     const isMobile = window.innerWidth <= 1024;
     const currentView = appState.currentView;
     
@@ -357,10 +549,14 @@ function updateBottomNavVisibility() {
         if (currentView === 'home') {
             bottomNav.classList.remove('hidden');
             bottomNav.classList.add('visible');
+            bottomNav.style.display = 'flex';
         } else {
             bottomNav.classList.remove('visible');
             bottomNav.classList.add('hidden');
+            bottomNav.style.display = 'none';
         }
+    } else {
+        if (bottomNav) bottomNav.style.display = 'none';
     }
 }
 
@@ -400,7 +596,7 @@ function setupIframeDimensions(iframe) {
         
         iframe.style.height = availableHeight + 'px';
         iframe.style.minHeight = '600px';
-        iframe.style.maxHeight = 'none'; // إزالة الحد الأقصى للسماح بالارتفاع الكامل
+        iframe.style.maxHeight = 'none';
     }
 }
 
@@ -445,7 +641,6 @@ function adjustIframeHeight(iframe) {
                 const finalHeight = Math.max(height, availableHeight);
                 iframe.style.height = finalHeight + 'px';
             } else {
-                // للشاشات الكبيرة، استخدم الارتفاع الفعلي للصفحة
                 iframe.style.height = height + 'px';
             }
         }
@@ -473,6 +668,12 @@ function setupIframeResizeHandler() {
 
 // وظيفة محسنة لتحميل الصفحات الخارجية
 async function loadExternalPage(url, title = 'Page') {
+    // إذا لم يكن المستخدم مصادقاً، لا تسمح بتحميل الصفحات
+    if (!appState.isAuthenticated) {
+        console.log('🚫 User not authenticated, cannot load external pages');
+        return false;
+    }
+    
     appState.isLoading = true;
     
     try {
@@ -596,8 +797,7 @@ function setupEventListeners() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('isLoggedIn');
-                window.location.href = 'https://yacine2007.github.io/secure-auth-app/login.html';
+                logout();
             }
         });
     }
@@ -621,6 +821,14 @@ function setupEventListeners() {
     });
     
     document.addEventListener('click', (e) => {
+        // إذا لم يكن المستخدم مصادقاً، لا تسمح بالنقر على أي عناصر
+        if (!appState.isAuthenticated) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🚫 User not authenticated, action blocked');
+            return;
+        }
+        
         if (e.target.closest('.story-item')) {
             const storyItem = e.target.closest('.story-item');
             const storyName = storyItem.querySelector('.story-name').textContent;
