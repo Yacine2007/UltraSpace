@@ -494,22 +494,32 @@ body {
 
 /* ========== AI Chat View & External Page View - إصلاح كامل وجذري ========== */
 /* تحسينات الـ iframe */
-.ai-iframe, .external-iframe {
+.ai-iframe, .external-iframe, .auth-iframe {
     width: 100%;
     border: none;
-    border-radius: 12px;
+    border-radius: 0;
     background: white;
     transition: all 0.3s ease;
 }
 
-/* تحسينات خاصة لصفحات AI والشارة والدعم */
-.ai-chat-container, .external-page-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+/* إزالة الحدود والزوايا المدورة */
+.view-content iframe {
+    border: none !important;
+    border-radius: 0 !important;
 }
 
+/* تحسينات خاصة للهواتف */
+@media (max-width: 1024px) {
+    .ai-iframe, .external-iframe {
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: none !important;
+    }
+    
+    .ai-chat-container, .external-page-container {
+        height: 100vh !important;
+    }
+}
 
 /* تحسينات للشاشات الكبيرة */
 @media (min-width: 1025px) {
@@ -519,12 +529,28 @@ body {
     }
 }
 
-/* تحسينات للشاشات الصغيرة */
-@media (max-width: 1024px) {
-    .ai-iframe, .external-iframe {
-        min-height: 500px;
-    }
+/* واجهة المصادقة كاملة الشاشة */
+.auth-container {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10000;
 }
+
+.auth-iframe {
+    width: 100%;
+    height: 100vh;
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+/* إخفاء العناصر عند العرض المصادق */
+.hidden-during-auth {
+    display: none !important;
+}
+
 
 /* إصلاح كامل للمحتوى في واجهات الـ iframe */
 .view.active#aiChatView .view-content,
