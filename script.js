@@ -83,19 +83,19 @@ function checkBYPROAuthentication() {
     }
 }
 
-// إنشاء واجهة المصادقة
+// إنشاء واجهة المصادقة كاملة الشاشة
 function createAuthView() {
     const mainContent = document.querySelector('.main-content');
     
     const authViewHTML = `
-        <div class="view" id="authView">
-            <div class="view-content">
-                <div class="auth-container">
+        <div class="view active" id="authView" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10000; background: var(--bg-color);">
+            <div class="view-content" style="height: 100vh; padding: 0; margin: 0;">
+                <div class="auth-container" style="width: 100%; height: 100vh;">
                     <iframe 
                         src="https://yacine2007.github.io/secure-auth-app/login.html" 
                         class="auth-iframe" 
                         id="authIframe"
-                        style="width: 100%; height: 100vh; border: none;"
+                        style="width: 100%; height: 100vh; border: none; position: fixed; top: 0; left: 0;"
                     ></iframe>
                 </div>
             </div>
@@ -122,6 +122,8 @@ function setupAuthIframeListener() {
             return;
         }
         
+        console.log('📨 Message received from auth iframe:', event.data);
+        
         // إذا كانت هناك بيانات مستخدم (من خلال localStorage)
         if (event.data && event.data.type === 'USER_AUTHENTICATED') {
             console.log('🔑 User authenticated message received');
@@ -129,32 +131,46 @@ function setupAuthIframeListener() {
         }
     });
     
-    // فحص دوري لحالة المصادقة
+    // فحص دوري مكثف لحالة المصادقة
     const checkAuthInterval = setInterval(() => {
         if (checkBYPROAuthentication()) {
+            console.log('🔄 Periodic check: User is authenticated');
             handleSuccessfulAuth();
             clearInterval(checkAuthInterval);
+        } else {
+            console.log('🔄 Periodic check: User not authenticated yet');
         }
-    }, 1000);
+    }, 500); // فحص كل 500 مللي ثانية
+    
+    // إيقاف الفحص بعد 5 دقائق
+    setTimeout(() => {
+        clearInterval(checkAuthInterval);
+        console.log('⏰ Authentication check timeout');
+    }, 5 * 60 * 1000);
 }
 
 // التعامل مع المصادقة الناجحة
 function handleSuccessfulAuth() {
-    console.log('✅ Authentication successful, switching to home view');
+    console.log('✅ Authentication successful, reloading page...');
     appState.isAuthenticated = true;
     
-    // إخفاء واجهة المصادقة
-    if (views.auth) {
-        views.auth.style.display = 'none';
+    // حفظ بيانات الصورة للمستقبل
+    saveUserProfileImage();
+    
+    // إعادة تحميل الصفحة بعد تأخير قصير
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}
+
+// حفظ صورة المستخدم للمستقبل
+function saveUserProfileImage() {
+    const user = getAuthenticatedUser();
+    if (user && user.image) {
+        console.log('💾 Saving user profile image for future use');
+        // يمكن حفظها في localStorage منفصل أو استخدام البيانات الحالية
+        localStorage.setItem('ultraspace_user_avatar', user.image);
     }
-    
-    // التبديل إلى الواجهة الرئيسية
-    switchView('home');
-    
-    // تحديث واجهة المستخدم
-    updateHeaderVisibility();
-    updateBottomNavVisibility();
-    displayUserInfo();
 }
 
 // عرض معلومات المستخدم
@@ -163,10 +179,64 @@ function displayUserInfo() {
     if (user) {
         console.log('👤 Displaying user info:', user);
         
-        const profileAvatar = document.getElementById('profileAvatar');
-        if (profileAvatar && user.image) {
+        // تحديث الصورة الرمزية في الهيدر
+        updateProfileAvatar(user);
+        
+        // تحديث الصورة في الإعدادات
+        updateSettingsAvatar(user);
+    }
+}
+
+// تحديث الصورة الرمزية في الهيدر
+function updateProfileAvatar(user) {
+    const profileAvatar = document.getElementById('profileAvatar');
+    if (profileAvatar) {
+        if (user.image) {
+            // استخدام الصورة من بيانات المستخدم
             profileAvatar.src = user.image;
             profileAvatar.alt = user.name || `User ${user.id}`;
+            profileAvatar.onerror = function() {
+                // إذا فشل تحميل الصورة، استخدم الصورة الافتراضية
+                this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
+            };
+        } else {
+            // استخدام الصورة الافتراضية
+            profileAvatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
+        }
+        profileAvatar.alt = user.name || `User ${user.id}`;
+    }
+}
+
+// تحديث الصورة في الإعدادات
+function updateSettingsAvatar(user) {
+    const settingsAvatar = document.getElementById('settingsAvatar');
+    if (!settingsAvatar) {
+        // إنشاء عنصر الصورة في الإعدادات إذا لم يكن موجوداً
+        const settingsSection = document.querySelector('.settings-section');
+        if (settingsSection) {
+            const avatarHTML = `
+                <div class="settings-item" style="text-align: center; padding: 20px; border-bottom: 1px solid var(--border-color);">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; overflow: hidden; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));">
+                        <img src="${user.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff'}" 
+                             alt="${user.name || 'User'}" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${user.name || user.id}') + '&background=3a86ff&color=fff'"
+                             id="settingsAvatar">
+                    </div>
+                    <div style="font-weight: 600; color: var(--text-color);">${user.name || `User ${user.id}`}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">${user.email || ''}</div>
+                </div>
+            `;
+            settingsSection.insertAdjacentHTML('afterbegin', avatarHTML);
+        }
+    } else {
+        // تحديث الصورة الموجودة
+        if (user.image) {
+            settingsAvatar.src = user.image;
+            settingsAvatar.alt = user.name || `User ${user.id}`;
+            settingsAvatar.onerror = function() {
+                this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
+            };
         }
     }
 }
@@ -184,6 +254,7 @@ function getAuthenticatedUser() {
 function logout() {
     console.log('🚪 Logging out...');
     localStorage.removeItem('bypro_user');
+    localStorage.removeItem('ultraspace_user_avatar');
     appState.isAuthenticated = false;
     
     // إعادة تحميل الصفحة للعودة إلى واجهة المصادقة
@@ -318,12 +389,16 @@ function initApp() {
     const isAuthenticated = checkBYPROAuthentication();
     
     if (!isAuthenticated) {
-        console.log('🔐 User not authenticated, showing auth view');
-        // إنشاء واجهة المصادقة
-        createAuthView();
+        console.log('🔐 User not authenticated, showing fullscreen auth view');
+        // إخفاء شاشة التحميل مباشرة
+        loadingScreen.remove();
+        appContainer.style.display = 'block';
         
-        // إظهار واجهة المصادقة مباشرة
-        showAuthView();
+        // إخفاء جميع العناصر الأخرى
+        hideAllUIElements();
+        
+        // إنشاء واجهة المصادقة كاملة الشاشة
+        createAuthView();
         return;
     }
     
@@ -364,32 +439,28 @@ function initApp() {
     displayUserInfo();
 }
 
-// إظهار واجهة المصادقة
-function showAuthView() {
-    loadingScreen.remove();
-    appContainer.style.display = 'block';
+// إخفاء جميع عناصر واجهة المستخدم
+function hideAllUIElements() {
+    // إخفاء الشريط الجانبي
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) sidebar.style.display = 'none';
     
-    // إخفاء جميع الواجهات الأخرى
+    // إخفاء التنقل السفلي
+    const bottomNav = document.getElementById('bottomNav');
+    if (bottomNav) bottomNav.style.display = 'none';
+    
+    // إخفاء الهيدرات
+    const homeHeader = document.getElementById('homeHeader');
+    const viewHeader = document.getElementById('viewHeader');
+    if (homeHeader) homeHeader.style.display = 'none';
+    if (viewHeader) viewHeader.style.display = 'none';
+    
+    // إخفاء جميع الواجهات
     Object.values(views).forEach(view => {
         if (view && view.id !== 'authView') {
             view.style.display = 'none';
         }
     });
-    
-    // إظهار واجهة المصادقة
-    if (views.auth) {
-        views.auth.style.display = 'block';
-        views.auth.classList.add('active');
-    }
-    
-    // إخفاء الهيدر والتنقل
-    const homeHeader = document.getElementById('homeHeader');
-    const viewHeader = document.getElementById('viewHeader');
-    const bottomNav = document.getElementById('bottomNav');
-    
-    if (homeHeader) homeHeader.style.display = 'none';
-    if (viewHeader) viewHeader.style.display = 'none';
-    if (bottomNav) bottomNav.style.display = 'none';
 }
 
 // تطبيق اللغة
@@ -491,6 +562,11 @@ function updateHeaderVisibility() {
         const profileAvatar = document.getElementById('profileAvatar');
         if (profileAvatar) {
             profileAvatar.addEventListener('click', openProfile);
+            // تحديث الصورة فوراً
+            const user = getAuthenticatedUser();
+            if (user) {
+                updateProfileAvatar(user);
+            }
         }
         
     } else {
