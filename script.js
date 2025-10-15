@@ -3,7 +3,8 @@ const appState = {
     currentView: 'home',
     language: localStorage.getItem('language') || 'en',
     isLoading: false,
-    viewHistory: ['home']
+    viewHistory: ['home'],
+    isLoggedIn: localStorage.getItem('isLoggedIn') === 'true'
 };
 
 // عناصر DOM
@@ -43,6 +44,21 @@ const viewTitles = {
     externalPage: 'Page',
     error: 'Error'
 };
+
+// ========== نظام المصادقة ==========
+
+// التحقق من تسجيل الدخول
+function checkAuthentication() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    
+    if (!isLoggedIn) {
+        // توجيه إلى صفحة تسجيل الدخول
+        window.location.href = 'https://yacine2007.github.io/secure-auth-app/login.html';
+        return false;
+    }
+    
+    return true;
+}
 
 // ========== نظام مشاركة المنشورات والروابط المباشرة ==========
 
@@ -89,11 +105,28 @@ function loadYacineWithPost(postId) {
                     }, '*');
                     
                     console.log('Message sent to iframe for post:', postId);
+                    
+                    // إعادة تعيين الرابط بعد تحميل المنشور
+                    setTimeout(() => {
+                        resetPostParameter();
+                    }, 2000);
                 }, 1000);
             }
         }, 100);
         
         setTimeout(() => clearInterval(checkIframeLoaded), 5000);
+    }
+}
+
+// إعادة تعيين معلمة post من الرابط
+function resetPostParameter() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.has('post')) {
+        // إزالة معلمة post من الرابط بدون إعادة تحميل الصفحة
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        console.log('🔄 Post parameter removed from URL');
     }
 }
 
@@ -133,6 +166,11 @@ window.addEventListener('message', function(event) {
             shareLink: shareLink
         }, event.origin);
     }
+    
+    if (event.data && event.data.type === 'OPEN_EXTERNAL_URL') {
+        const url = event.data.url;
+        window.open(url, '_blank');
+    }
 });
 
 // إنشاء رابط مشاركة للمنشور
@@ -145,7 +183,12 @@ function generatePostShareLink(postId) {
 
 // تهيئة التطبيق
 function initApp() {
-    // أولاً: تحقق من معلمات URL للروابط المباشرة
+    // أولاً: التحقق من المصادقة
+    if (!checkAuthentication()) {
+        return;
+    }
+    
+    // ثانياً: تحقق من معلمات URL للروابط المباشرة
     const hasUrlParams = handleUrlParameters();
     
     if (!hasUrlParams) {
@@ -337,7 +380,7 @@ function goBack() {
     }
 }
 
-// إعداد أبعاد الـ iframe
+// إعداد أبعاد الـ iframe - محسنة لجميع الصفحات
 function setupIframeDimensions(iframe) {
     const isMobile = window.innerWidth <= 1024;
     const viewportHeight = window.innerHeight;
@@ -357,6 +400,7 @@ function setupIframeDimensions(iframe) {
         
         iframe.style.height = availableHeight + 'px';
         iframe.style.minHeight = '600px';
+        iframe.style.maxHeight = 'none'; // إزالة الحد الأقصى للسماح بالارتفاع الكامل
     }
 }
 
@@ -401,9 +445,8 @@ function adjustIframeHeight(iframe) {
                 const finalHeight = Math.max(height, availableHeight);
                 iframe.style.height = finalHeight + 'px';
             } else {
-                const maxHeight = window.innerHeight - 100;
-                const finalHeight = Math.min(height, maxHeight);
-                iframe.style.height = finalHeight + 'px';
+                // للشاشات الكبيرة، استخدم الارتفاع الفعلي للصفحة
+                iframe.style.height = height + 'px';
             }
         }
     } catch (error) {
@@ -553,7 +596,8 @@ function setupEventListeners() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to logout?')) {
-                alert('Logout successful!');
+                localStorage.removeItem('isLoggedIn');
+                window.location.href = 'https://yacine2007.github.io/secure-auth-app/login.html';
             }
         });
     }
