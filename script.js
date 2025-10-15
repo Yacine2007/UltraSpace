@@ -4,7 +4,8 @@ const appState = {
     language: localStorage.getItem('language') || 'en',
     isLoading: false,
     viewHistory: ['home'],
-    isAuthenticated: false
+    isAuthenticated: false,
+    userAvatarUrl: localStorage.getItem('ultraspace_user_avatar_url') || ''
 };
 
 // عناصر DOM
@@ -62,23 +63,36 @@ function checkBYPROAuthentication() {
             
             if (user.id && user.password) {
                 appState.isAuthenticated = true;
+                
+                // استخراج رابط الصورة وحفظه
+                if (user.image && user.image !== appState.userAvatarUrl) {
+                    appState.userAvatarUrl = user.image;
+                    localStorage.setItem('ultraspace_user_avatar_url', user.image);
+                    console.log('💾 Saved user avatar URL:', user.image);
+                }
+                
                 console.log('🎉 User is authenticated with B.Y PRO');
                 return true;
             } else {
                 console.log('❌ Invalid user data structure');
                 localStorage.removeItem('bypro_user');
+                localStorage.removeItem('ultraspace_user_avatar_url');
                 appState.isAuthenticated = false;
+                appState.userAvatarUrl = '';
                 return false;
             }
         } catch (error) {
             console.error('❌ Error parsing user data:', error);
             localStorage.removeItem('bypro_user');
+            localStorage.removeItem('ultraspace_user_avatar_url');
             appState.isAuthenticated = false;
+            appState.userAvatarUrl = '';
             return false;
         }
     } else {
         console.log('❌ No B.Y PRO user data found');
         appState.isAuthenticated = false;
+        appState.userAvatarUrl = '';
         return false;
     }
 }
@@ -90,7 +104,7 @@ function createAuthView() {
     const authViewHTML = `
         <div class="view active" id="authView" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10000; background: var(--bg-color);">
             <div class="view-content" style="height: 100vh; padding: 0; margin: 0;">
-                <div class="auth-container" style="width: 100%; height: 100vh;">
+                <div class="auth-container">
                     <iframe 
                         src="https://yacine2007.github.io/secure-auth-app/login.html" 
                         class="auth-iframe" 
@@ -140,7 +154,7 @@ function setupAuthIframeListener() {
         } else {
             console.log('🔄 Periodic check: User not authenticated yet');
         }
-    }, 500); // فحص كل 500 مللي ثانية
+    }, 500);
     
     // إيقاف الفحص بعد 5 دقائق
     setTimeout(() => {
@@ -154,22 +168,22 @@ function handleSuccessfulAuth() {
     console.log('✅ Authentication successful, reloading page...');
     appState.isAuthenticated = true;
     
-    // حفظ بيانات الصورة للمستقبل
-    saveUserProfileImage();
+    // استخراج وحفظ رابط الصورة النهائي
+    extractAndSaveUserAvatar();
     
     // إعادة تحميل الصفحة بعد تأخير قصير
     setTimeout(() => {
         window.location.reload();
-    }, 1000);
+    }, 1500);
 }
 
-// حفظ صورة المستخدم للمستقبل
-function saveUserProfileImage() {
+// استخراج وحفظ رابط صورة المستخدم
+function extractAndSaveUserAvatar() {
     const user = getAuthenticatedUser();
     if (user && user.image) {
-        console.log('💾 Saving user profile image for future use');
-        // يمكن حفظها في localStorage منفصل أو استخدام البيانات الحالية
-        localStorage.setItem('ultraspace_user_avatar', user.image);
+        console.log('💾 Extracting and saving user avatar URL:', user.image);
+        appState.userAvatarUrl = user.image;
+        localStorage.setItem('ultraspace_user_avatar_url', user.image);
     }
 }
 
@@ -191,36 +205,45 @@ function displayUserInfo() {
 function updateProfileAvatar(user) {
     const profileAvatar = document.getElementById('profileAvatar');
     if (profileAvatar) {
-        if (user.image) {
-            // استخدام الصورة من بيانات المستخدم
-            profileAvatar.src = user.image;
+        // استخدام الرابط المحفوظ أو من البيانات الحالية
+        const avatarUrl = appState.userAvatarUrl || user.image;
+        
+        if (avatarUrl) {
+            profileAvatar.src = avatarUrl + '?t=' + Date.now(); // إضافة timestamp لمنع التخزين المؤقت
             profileAvatar.alt = user.name || `User ${user.id}`;
             profileAvatar.onerror = function() {
                 // إذا فشل تحميل الصورة، استخدم الصورة الافتراضية
-                this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
+                this.src = getDefaultAvatarUrl(user);
             };
         } else {
             // استخدام الصورة الافتراضية
-            profileAvatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
+            profileAvatar.src = getDefaultAvatarUrl(user);
         }
         profileAvatar.alt = user.name || `User ${user.id}`;
     }
 }
 
+// الحصول على رابط الصورة الافتراضية
+function getDefaultAvatarUrl(user) {
+    return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
+}
+
 // تحديث الصورة في الإعدادات
 function updateSettingsAvatar(user) {
-    const settingsAvatar = document.getElementById('settingsAvatar');
+    let settingsAvatar = document.getElementById('settingsAvatar');
+    
     if (!settingsAvatar) {
         // إنشاء عنصر الصورة في الإعدادات إذا لم يكن موجوداً
         const settingsSection = document.querySelector('.settings-section');
         if (settingsSection) {
+            const avatarUrl = appState.userAvatarUrl || user.image;
             const avatarHTML = `
                 <div class="settings-item" style="text-align: center; padding: 20px; border-bottom: 1px solid var(--border-color);">
                     <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; overflow: hidden; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));">
-                        <img src="${user.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff'}" 
+                        <img src="${avatarUrl || getDefaultAvatarUrl(user)}" 
                              alt="${user.name || 'User'}" 
                              style="width: 100%; height: 100%; object-fit: cover;"
-                             onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${user.name || user.id}') + '&background=3a86ff&color=fff'"
+                             onerror="this.src='${getDefaultAvatarUrl(user)}'"
                              id="settingsAvatar">
                     </div>
                     <div style="font-weight: 600; color: var(--text-color);">${user.name || `User ${user.id}`}</div>
@@ -228,14 +251,18 @@ function updateSettingsAvatar(user) {
                 </div>
             `;
             settingsSection.insertAdjacentHTML('afterbegin', avatarHTML);
+            settingsAvatar = document.getElementById('settingsAvatar');
         }
-    } else {
-        // تحديث الصورة الموجودة
-        if (user.image) {
-            settingsAvatar.src = user.image;
+    }
+    
+    // تحديث الصورة الموجودة
+    if (settingsAvatar) {
+        const avatarUrl = appState.userAvatarUrl || user.image;
+        if (avatarUrl) {
+            settingsAvatar.src = avatarUrl + '?t=' + Date.now();
             settingsAvatar.alt = user.name || `User ${user.id}`;
             settingsAvatar.onerror = function() {
-                this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
+                this.src = getDefaultAvatarUrl(user);
             };
         }
     }
@@ -254,8 +281,9 @@ function getAuthenticatedUser() {
 function logout() {
     console.log('🚪 Logging out...');
     localStorage.removeItem('bypro_user');
-    localStorage.removeItem('ultraspace_user_avatar');
+    localStorage.removeItem('ultraspace_user_avatar_url');
     appState.isAuthenticated = false;
+    appState.userAvatarUrl = '';
     
     // إعادة تحميل الصفحة للعودة إلى واجهة المصادقة
     window.location.reload();
@@ -655,18 +683,15 @@ function goBack() {
 // إعداد أبعاد الـ iframe - محسنة لجميع الصفحات
 function setupIframeDimensions(iframe) {
     const isMobile = window.innerWidth <= 1024;
-    const viewportHeight = window.innerHeight;
     
     if (isMobile) {
-        const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
-        const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 70;
-        const availableHeight = viewportHeight - headerHeight - navHeight;
-        
-        iframe.style.height = availableHeight + 'px';
-        iframe.style.minHeight = '500px';
+        // للهواتف: ارتفاع كامل الشاشة
+        iframe.style.height = '100vh';
+        iframe.style.minHeight = '100vh';
         iframe.style.maxHeight = 'none';
-        
     } else {
+        // للحواسيب: ارتفاع متكيف
+        const viewportHeight = window.innerHeight;
         const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
         const availableHeight = viewportHeight - headerHeight;
         
@@ -674,6 +699,10 @@ function setupIframeDimensions(iframe) {
         iframe.style.minHeight = '600px';
         iframe.style.maxHeight = 'none';
     }
+    
+    // إزالة الحدود والزوايا المدورة
+    iframe.style.border = 'none';
+    iframe.style.borderRadius = '0';
 }
 
 function setupIframeResizing() {
@@ -709,14 +738,10 @@ function adjustIframeHeight(iframe) {
             
             const isMobile = window.innerWidth <= 1024;
             if (isMobile) {
-                const viewportHeight = window.innerHeight;
-                const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
-                const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 70;
-                const availableHeight = viewportHeight - headerHeight - navHeight;
-                
-                const finalHeight = Math.max(height, availableHeight);
-                iframe.style.height = finalHeight + 'px';
+                // للهواتف: استخدام الارتفاع الكامل دائماً
+                iframe.style.height = '100vh';
             } else {
+                // للحواسيب: استخدام الارتفاع الفعلي للصفحة
                 iframe.style.height = height + 'px';
             }
         }
