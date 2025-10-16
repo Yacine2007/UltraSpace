@@ -519,6 +519,46 @@ body {
     .ai-chat-container, .external-page-container {
         height: 100vh !important;
     }
+    
+    /* في الهواتف: الصفحات الخارجية كاملة الشاشة مع شريط العنوان فقط */
+    .view.active#aiChatView,
+    .view.active#externalPageView {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        background: var(--background-color);
+    }
+    
+    .view.active#aiChatView .view-content,
+    .view.active#externalPageView .view-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100vh !important;
+        width: 100vw !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .view.active#aiChatView .view-header,
+    .view.active#externalPageView .view-header {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1001;
+        background: rgba(30, 30, 30, 0.95);
+        backdrop-filter: blur(20px);
+    }
+    
+    .view.active#aiChatView .ai-iframe,
+    .view.active#externalPageView .external-iframe {
+        height: calc(100vh - 60px) !important;
+        margin-top: 60px;
+    }
 }
 
 /* تحسينات للشاشات الكبيرة */
@@ -550,7 +590,6 @@ body {
 .hidden-during-auth {
     display: none !important;
 }
-
 
 /* إصلاح كامل للمحتوى في واجهات الـ iframe */
 .view.active#aiChatView .view-content,
@@ -965,7 +1004,12 @@ body {
     /* إصلاحات إضافية للهواتف */
     .view.active#aiChatView,
     .view.active#externalPageView {
-        height: calc(100vh - 60px - 70px);
+        height: 100vh !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        z-index: 1000 !important;
     }
     
     .ai-chat-container,
@@ -975,7 +1019,8 @@ body {
     
     .view.active#aiChatView .view-content,
     .view.active#externalPageView .view-content {
-        height: 100% !important;
+        height: 100vh !important;
+        padding: 0 !important;
     }
 
     .header {
