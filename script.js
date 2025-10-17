@@ -5,13 +5,32 @@ const appState = {
     isLoading: false,
     viewHistory: ['home'],
     isAuthenticated: false,
-    userAvatarUrl: localStorage.getItem('ultraspace_user_avatar_url') || ''
+    userAvatarUrl: localStorage.getItem('ultraspace_user_avatar_url') || '',
+    currentPostId: null,
+    isMobile: window.innerWidth <= 1024
 };
 
 // عناصر DOM
-const loadingScreen = document.getElementById('loadingScreen');
-const appContainer = document.getElementById('appContainer');
-const navButtons = document.querySelectorAll('.nav-btn');
+const elements = {
+    loadingScreen: document.getElementById('loadingScreen'),
+    appContainer: document.getElementById('appContainer'),
+    navButtons: document.querySelectorAll('.nav-btn'),
+    homeHeader: document.getElementById('homeHeader'),
+    viewHeader: document.getElementById('viewHeader'),
+    backBtn: document.getElementById('backBtn'),
+    profileAvatar: document.getElementById('profileAvatar'),
+    languageSelect: document.getElementById('languageSelect'),
+    logoutBtn: document.getElementById('settingsLogoutBtn'),
+    errorHomeBtn: document.getElementById('errorHomeBtn'),
+    messageItems: document.querySelectorAll('.message-item'),
+    externalIframe: document.getElementById('externalIframe'),
+    aiIframe: document.getElementById('aiIframe'),
+    bottomNav: document.getElementById('bottomNav'),
+    viewTitle: document.getElementById('viewTitle'),
+    searchInput: document.querySelector('.search-bar input')
+};
+
+// عناصر الواجهات
 const views = {
     home: document.getElementById('homeView'),
     notifications: document.getElementById('notificationsView'),
@@ -19,22 +38,8 @@ const views = {
     settings: document.getElementById('settingsView'),
     aiChat: document.getElementById('aiChatView'),
     externalPage: document.getElementById('externalPageView'),
-    error: document.getElementById('errorView'),
-    auth: document.getElementById('authView') // سيتم إنشاؤه ديناميكياً
+    error: document.getElementById('errorView')
 };
-
-const homeHeader = document.getElementById('homeHeader');
-const viewHeader = document.getElementById('viewHeader');
-const backBtn = document.getElementById('backBtn');
-const profileAvatar = document.getElementById('profileAvatar');
-const languageSelect = document.getElementById('languageSelect');
-const logoutBtn = document.getElementById('settingsLogoutBtn');
-const errorHomeBtn = document.getElementById('errorHomeBtn');
-const messageItems = document.querySelectorAll('.message-item');
-const externalIframe = document.getElementById('externalIframe');
-const aiIframe = document.getElementById('aiIframe');
-const bottomNav = document.getElementById('bottomNav');
-const viewTitle = document.getElementById('viewTitle');
 
 // عناوين الواجهات
 const viewTitles = {
@@ -44,22 +49,23 @@ const viewTitles = {
     settings: 'Settings',
     aiChat: 'UltraSpace AI',
     externalPage: 'Page',
-    error: 'Error',
-    auth: 'Authentication'
+    error: 'Error'
 };
 
 // ========== نظام المصادقة ==========
 
-// التحقق من تسجيل الدخول في B.Y PRO Accounts
+/**
+ * التحقق من تسجيل الدخول في B.Y PRO Accounts
+ */
 function checkBYPROAuthentication() {
-    console.log('🔍 Checking B.Y PRO authentication...');
+    console.log('🔍 التحقق من مصادقة B.Y PRO...');
     
     const userData = localStorage.getItem('bypro_user');
     
     if (userData) {
         try {
             const user = JSON.parse(userData);
-            console.log('✅ Found B.Y PRO user data:', user);
+            console.log('✅ تم العثور على بيانات المستخدم:', user);
             
             if (user.id && user.password) {
                 appState.isAuthenticated = true;
@@ -68,13 +74,13 @@ function checkBYPROAuthentication() {
                 if (user.image && user.image !== appState.userAvatarUrl) {
                     appState.userAvatarUrl = user.image;
                     localStorage.setItem('ultraspace_user_avatar_url', user.image);
-                    console.log('💾 Saved user avatar URL:', user.image);
+                    console.log('💾 تم حفظ رابط صورة المستخدم:', user.image);
                 }
                 
-                console.log('🎉 User is authenticated with B.Y PRO');
+                console.log('🎉 المستخدم مصادق بنجاح مع B.Y PRO');
                 return true;
             } else {
-                console.log('❌ Invalid user data structure');
+                console.log('❌ هيكل بيانات المستخدم غير صالح');
                 localStorage.removeItem('bypro_user');
                 localStorage.removeItem('ultraspace_user_avatar_url');
                 appState.isAuthenticated = false;
@@ -82,7 +88,7 @@ function checkBYPROAuthentication() {
                 return false;
             }
         } catch (error) {
-            console.error('❌ Error parsing user data:', error);
+            console.error('❌ خطأ في تحليل بيانات المستخدم:', error);
             localStorage.removeItem('bypro_user');
             localStorage.removeItem('ultraspace_user_avatar_url');
             appState.isAuthenticated = false;
@@ -90,19 +96,23 @@ function checkBYPROAuthentication() {
             return false;
         }
     } else {
-        console.log('❌ No B.Y PRO user data found');
+        console.log('❌ لم يتم العثور على بيانات مستخدم B.Y PRO');
         appState.isAuthenticated = false;
         appState.userAvatarUrl = '';
         return false;
     }
 }
 
-// إنشاء واجهة المصادقة كاملة الشاشة
+/**
+ * إنشاء واجهة المصادقة كاملة الشاشة
+ */
 function createAuthView() {
+    console.log('🔐 إنشاء واجهة المصادقة...');
+    
     const mainContent = document.querySelector('.main-content');
     
     const authViewHTML = `
-        <div class="view active" id="authView" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10000; background: var(--bg-color);">
+        <div class="view active" id="authView" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10000; background: var(--background-color);">
             <div class="view-content" style="height: 100vh; padding: 0; margin: 0;">
                 <div class="auth-container">
                     <iframe 
@@ -123,7 +133,9 @@ function createAuthView() {
     setupAuthIframeListener();
 }
 
-// إعداد مستمع لرسائل iframe المصادقة
+/**
+ * إعداد مستمع لرسائل iframe المصادقة
+ */
 function setupAuthIframeListener() {
     window.addEventListener('message', function(event) {
         // التحقق من مصدر الرسالة
@@ -133,14 +145,15 @@ function setupAuthIframeListener() {
         ];
         
         if (!allowedOrigins.includes(event.origin)) {
+            console.warn('⚠️ رسالة من مصدر غير مصرح به:', event.origin);
             return;
         }
         
-        console.log('📨 Message received from auth iframe:', event.data);
+        console.log('📨 تم استلام رسالة من iframe المصادقة:', event.data);
         
         // إذا كانت هناك بيانات مستخدم (من خلال localStorage)
         if (event.data && event.data.type === 'USER_AUTHENTICATED') {
-            console.log('🔑 User authenticated message received');
+            console.log('🔑 تم استلام رسالة مصادقة المستخدم');
             handleSuccessfulAuth();
         }
     });
@@ -148,24 +161,26 @@ function setupAuthIframeListener() {
     // فحص دوري مكثف لحالة المصادقة
     const checkAuthInterval = setInterval(() => {
         if (checkBYPROAuthentication()) {
-            console.log('🔄 Periodic check: User is authenticated');
+            console.log('🔄 الفحص الدوري: المستخدم مصادق');
             handleSuccessfulAuth();
             clearInterval(checkAuthInterval);
         } else {
-            console.log('🔄 Periodic check: User not authenticated yet');
+            console.log('🔄 الفحص الدوري: المستخدم غير مصادق بعد');
         }
     }, 500);
     
     // إيقاف الفحص بعد 5 دقائق
     setTimeout(() => {
         clearInterval(checkAuthInterval);
-        console.log('⏰ Authentication check timeout');
+        console.log('⏰ انتهت مدة التحقق من المصادقة');
     }, 5 * 60 * 1000);
 }
 
-// التعامل مع المصادقة الناجحة
+/**
+ * التعامل مع المصادقة الناجحة
+ */
 function handleSuccessfulAuth() {
-    console.log('✅ Authentication successful, reloading page...');
+    console.log('✅ تمت المصادقة بنجاح، إعادة تحميل الصفحة...');
     appState.isAuthenticated = true;
     
     // استخراج وحفظ رابط الصورة النهائي
@@ -177,21 +192,25 @@ function handleSuccessfulAuth() {
     }, 1500);
 }
 
-// استخراج وحفظ رابط صورة المستخدم
+/**
+ * استخراج وحفظ رابط صورة المستخدم
+ */
 function extractAndSaveUserAvatar() {
     const user = getAuthenticatedUser();
     if (user && user.image) {
-        console.log('💾 Extracting and saving user avatar URL:', user.image);
+        console.log('💾 استخراج وحفظ رابط صورة المستخدم:', user.image);
         appState.userAvatarUrl = user.image;
         localStorage.setItem('ultraspace_user_avatar_url', user.image);
     }
 }
 
-// عرض معلومات المستخدم
+/**
+ * عرض معلومات المستخدم
+ */
 function displayUserInfo() {
     const user = getAuthenticatedUser();
     if (user) {
-        console.log('👤 Displaying user info:', user);
+        console.log('👤 عرض معلومات المستخدم:', user);
         
         // تحديث الصورة الرمزية في الهيدر
         updateProfileAvatar(user);
@@ -201,7 +220,9 @@ function displayUserInfo() {
     }
 }
 
-// تحديث الصورة الرمزية في الهيدر
+/**
+ * تحديث الصورة الرمزية في الهيدر
+ */
 function updateProfileAvatar(user) {
     const profileAvatar = document.getElementById('profileAvatar');
     if (profileAvatar) {
@@ -223,12 +244,16 @@ function updateProfileAvatar(user) {
     }
 }
 
-// الحصول على رابط الصورة الافتراضية
+/**
+ * الحصول على رابط الصورة الافتراضية
+ */
 function getDefaultAvatarUrl(user) {
     return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
 }
 
-// تحديث الصورة في الإعدادات
+/**
+ * تحديث الصورة في الإعدادات
+ */
 function updateSettingsAvatar(user) {
     let settingsAvatar = document.getElementById('settingsAvatar');
     
@@ -268,7 +293,9 @@ function updateSettingsAvatar(user) {
     }
 }
 
-// الحصول على بيانات المستخدم المصادق
+/**
+ * الحصول على بيانات المستخدم المصادق
+ */
 function getAuthenticatedUser() {
     const userData = localStorage.getItem('bypro_user');
     if (userData) {
@@ -277,29 +304,34 @@ function getAuthenticatedUser() {
     return null;
 }
 
-// تسجيل الخروج
+/**
+ * تسجيل الخروج
+ */
 function logout() {
-    console.log('🚪 Logging out...');
-    localStorage.removeItem('bypro_user');
-    localStorage.removeItem('ultraspace_user_avatar_url');
-    appState.isAuthenticated = false;
-    appState.userAvatarUrl = '';
+    console.log('🚪 جاري تسجيل الخروج...');
     
-    // إعادة تحميل الصفحة للعودة إلى واجهة المصادقة
-    window.location.reload();
+    if (confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟')) {
+        localStorage.removeItem('bypro_user');
+        localStorage.removeItem('ultraspace_user_avatar_url');
+        appState.isAuthenticated = false;
+        appState.userAvatarUrl = '';
+        
+        // إعادة تحميل الصفحة للعودة إلى واجهة المصادقة
+        window.location.reload();
+    }
 }
-
-// ========== نهاية نظام المصادقة ==========
 
 // ========== نظام مشاركة المنشورات والروابط المباشرة ==========
 
-// وظيفة لقراءة معلمات URL وتحديد المنشور المطلوب
+/**
+ * وظيفة لقراءة معلمات URL وتحديد المنشور المطلوب
+ */
 function handleUrlParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const postId = urlParams.get('post');
     const pageParam = urlParams.get('page');
     
-    console.log('URL Parameters detected:', { postId, pageParam });
+    console.log('🔗 معلمات URL المكتشفة:', { postId, pageParam });
     
     // إذا كان هناك معلمة page، قم بتحميل الصفحة المطلوبة
     if (pageParam === 'yacine') {
@@ -316,26 +348,28 @@ function handleUrlParameters() {
     return false;
 }
 
-// تحميل صفحة Yacine مع منشور محدد
+/**
+ * تحميل صفحة Yacine مع منشور محدد
+ */
 function loadYacineWithPost(postId) {
-    console.log('Loading Yacine with post:', postId);
+    console.log('📖 جاري تحميل Yacine مع المنشور:', postId);
     
     // تحميل صفحة Yacine
     loadExternalPage('Yacine/index.html', 'Yacine');
     
     // إرسال رسالة بالمنشور المطلوب بعد تحميل الـ iframe
-    if (externalIframe) {
+    if (elements.externalIframe) {
         const checkIframeLoaded = setInterval(() => {
-            if (externalIframe.contentWindow && externalIframe.src.includes('Yacine/index.html')) {
+            if (elements.externalIframe.contentWindow && elements.externalIframe.src.includes('Yacine/index.html')) {
                 clearInterval(checkIframeLoaded);
                 
                 setTimeout(() => {
-                    externalIframe.contentWindow.postMessage({
+                    elements.externalIframe.contentWindow.postMessage({
                         type: 'SHOW_POST',
                         postId: postId
                     }, '*');
                     
-                    console.log('Message sent to iframe for post:', postId);
+                    console.log('📨 تم إرسال الرسالة إلى iframe للمنشور:', postId);
                     
                     // إعادة تعيين الرابط بعد تحميل المنشور
                     setTimeout(() => {
@@ -349,167 +383,104 @@ function loadYacineWithPost(postId) {
     }
 }
 
-// إعادة تعيين معلمة post من الرابط
+/**
+ * إعادة تعيين معلمة post من الرابط
+ */
 function resetPostParameter() {
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.has('post')) {
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
-        console.log('🔄 Post parameter removed from URL');
+        console.log('🔄 تمت إزالة معلمة post من URL');
     }
 }
 
-// استمع لرسائل من الـ iframe
-window.addEventListener('message', function(event) {
-    // تحقق من مصدر الرسالة لأسباب أمنية
-    const allowedOrigins = [
-        'https://yacine2007.github.io',
-        window.location.origin,
-        'http://localhost:3000',
-        'http://127.0.0.1:3000'
-    ];
-    
-    let originAllowed = false;
-    for (const allowedOrigin of allowedOrigins) {
-        if (event.origin === allowedOrigin || event.origin.startsWith(allowedOrigin)) {
-            originAllowed = true;
-            break;
-        }
-    }
-    
-    if (!originAllowed) {
-        console.warn('Message from unauthorized origin:', event.origin);
-        return;
-    }
-    
-    if (event.data && event.data.type === 'POST_LOADED') {
-        console.log('Post loaded in iframe:', event.data.postId);
-    }
-    
-    if (event.data && event.data.type === 'SHARE_LINK_REQUEST') {
-        const postId = event.data.postId;
-        const shareLink = generatePostShareLink(postId);
+/**
+ * استمع لرسائل من الـ iframe
+ */
+function setupIframeMessageListener() {
+    window.addEventListener('message', function(event) {
+        // تحقق من مصدر الرسالة لأسباب أمنية
+        const allowedOrigins = [
+            'https://yacine2007.github.io',
+            window.location.origin,
+            'http://localhost:3000',
+            'http://127.0.0.1:3000'
+        ];
         
-        event.source.postMessage({
-            type: 'SHARE_LINK_RESPONSE',
-            shareLink: shareLink
-        }, event.origin);
-    }
-    
-    if (event.data && event.data.type === 'OPEN_EXTERNAL_URL') {
-        const url = event.data.url;
-        window.open(url, '_blank');
-    }
-});
+        let originAllowed = false;
+        for (const allowedOrigin of allowedOrigins) {
+            if (event.origin === allowedOrigin || event.origin.startsWith(allowedOrigin)) {
+                originAllowed = true;
+                break;
+            }
+        }
+        
+        if (!originAllowed) {
+            console.warn('⚠️ رسالة من مصدر غير مصرح به:', event.origin);
+            return;
+        }
+        
+        // معالجة أنواع الرسائل المختلفة
+        if (event.data && event.data.type === 'POST_LOADED') {
+            console.log('✅ تم تحميل المنشور في iframe:', event.data.postId);
+        }
+        
+        if (event.data && event.data.type === 'SHARE_LINK_REQUEST') {
+            const postId = event.data.postId;
+            const shareLink = generatePostShareLink(postId);
+            
+            event.source.postMessage({
+                type: 'SHARE_LINK_RESPONSE',
+                shareLink: shareLink
+            }, event.origin);
+        }
+        
+        if (event.data && event.data.type === 'OPEN_EXTERNAL_URL') {
+            const url = event.data.url;
+            window.open(url, '_blank');
+        }
+        
+        if (event.data && event.data.type === 'RESIZE_IFRAME') {
+            const height = event.data.height;
+            resizeIframe(height);
+        }
+    });
+}
 
-// إنشاء رابط مشاركة للمنشور
+/**
+ * إنشاء رابط مشاركة للمنشور
+ */
 function generatePostShareLink(postId) {
     const baseUrl = window.location.origin + window.location.pathname;
     return `${baseUrl}?post=${postId}`;
 }
 
-// ========== نهاية نظام المشاركة ==========
-
-// تهيئة التطبيق
-function initApp() {
-    // أولاً: التحقق من المصادقة
-    const isAuthenticated = checkBYPROAuthentication();
-    
-    if (!isAuthenticated) {
-        console.log('🔐 User not authenticated, showing fullscreen auth view');
-        // إخفاء شاشة التحميل مباشرة
-        loadingScreen.remove();
-        appContainer.style.display = 'block';
-        
-        // إخفاء جميع العناصر الأخرى
-        hideAllUIElements();
-        
-        // إنشاء واجهة المصادقة كاملة الشاشة
-        createAuthView();
-        return;
-    }
-    
-    // إذا كان المستخدم مصادقاً، متابعة التحميل العادي
-    console.log('✅ User authenticated, loading UltraSpace normally');
-    
-    // ثانياً: تحقق من معلمات URL للروابط المباشرة
-    const hasUrlParams = handleUrlParameters();
-    
-    if (!hasUrlParams) {
-        // التحميل العادي إذا لم توجد معلمات
-        setTimeout(() => {
-            loadingScreen.style.opacity = '0';
-            setTimeout(() => {
-                loadingScreen.remove();
-                appContainer.style.display = 'block';
-                setupEventListeners();
-                updateHeaderVisibility();
-                updateBottomNavVisibility();
-                
-                setupIframeResizing();
-                setupIframeResizeHandler();
-                
-            }, 500);
-        }, 2000);
-    } else {
-        // إذا كانت هناك معلمات، تخطى شاشة التحميل
-        loadingScreen.remove();
-        appContainer.style.display = 'block';
-        setupEventListeners();
-        updateHeaderVisibility();
-        updateBottomNavVisibility();
-        setupIframeResizing();
-        setupIframeResizeHandler();
-    }
-
-    applyLanguage();
-    displayUserInfo();
-}
-
-// إخفاء جميع عناصر واجهة المستخدم
-function hideAllUIElements() {
-    // إخفاء الشريط الجانبي
-    const sidebar = document.querySelector('.sidebar');
-    if (sidebar) sidebar.style.display = 'none';
-    
-    // إخفاء التنقل السفلي
-    const bottomNav = document.getElementById('bottomNav');
-    if (bottomNav) bottomNav.style.display = 'none';
-    
-    // إخفاء الهيدرات
-    const homeHeader = document.getElementById('homeHeader');
-    const viewHeader = document.getElementById('viewHeader');
-    if (homeHeader) homeHeader.style.display = 'none';
-    if (viewHeader) viewHeader.style.display = 'none';
-    
-    // إخفاء جميع الواجهات
-    Object.values(views).forEach(view => {
-        if (view && view.id !== 'authView') {
-            view.style.display = 'none';
-        }
-    });
-}
-
-// تطبيق اللغة
-function applyLanguage() {
-    document.documentElement.lang = appState.language;
-    localStorage.setItem('language', appState.language);
-    
-    if (languageSelect) {
-        languageSelect.value = appState.language;
+/**
+ * تغيير حجم الـ iframe ديناميكياً
+ */
+function resizeIframe(height) {
+    if (elements.externalIframe) {
+        elements.externalIframe.style.height = height + 'px';
     }
 }
 
-// تبديل الواجهة
+// ========== إدارة الواجهات والتنقل ==========
+
+/**
+ * تبديل الواجهة
+ */
 function switchView(viewId) {
     if (appState.currentView === viewId) return;
     
     // إذا لم يكن المستخدم مصادقاً، لا تسمح بالتبديل
     if (!appState.isAuthenticated && viewId !== 'auth') {
-        console.log('🚫 User not authenticated, cannot switch views');
+        console.log('🚫 المستخدم غير مصادق، لا يمكن تبديل الواجهات');
         return;
     }
+    
+    console.log(`🔄 تبديل الواجهة إلى: ${viewId}`);
     
     const currentActiveView = document.querySelector('.view.active');
     
@@ -532,7 +503,8 @@ function switchView(viewId) {
             }
         }
         
-        navButtons.forEach(btn => {
+        // تحديث أزرار التنقل
+        elements.navButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.view === viewId);
         });
         
@@ -540,6 +512,7 @@ function switchView(viewId) {
         updateBottomNavVisibility();
         updateViewTitle(viewId);
         
+        // إعداد الـ iframe إذا لزم الأمر
         if (viewId === 'aiChat' || viewId === 'externalPage') {
             setTimeout(() => {
                 const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
@@ -551,125 +524,77 @@ function switchView(viewId) {
     }, 150);
 }
 
-// تحديث رأس الصفحة
+/**
+ * تحديث رأس الصفحة
+ */
 function updateHeaderVisibility() {
     // إذا لم يكن المستخدم مصادقاً، لا تعرض الهيدر
     if (!appState.isAuthenticated) {
-        const homeHeader = document.getElementById('homeHeader');
-        const viewHeader = document.getElementById('viewHeader');
-        if (homeHeader) homeHeader.style.display = 'none';
-        if (viewHeader) viewHeader.style.display = 'none';
+        if (elements.homeHeader) elements.homeHeader.style.display = 'none';
+        if (elements.viewHeader) elements.viewHeader.style.display = 'none';
         return;
     }
     
     const currentView = appState.currentView;
-    const mainArea = document.querySelector('.main-area');
-    
-    const existingHomeHeader = document.getElementById('homeHeader');
-    const existingViewHeader = document.getElementById('viewHeader');
-    
-    if (existingHomeHeader) existingHomeHeader.remove();
-    if (existingViewHeader) existingViewHeader.remove();
+    const isMobile = appState.isMobile;
     
     if (currentView === 'home') {
-        const homeHeaderHTML = `
-            <header class="header home-header" id="homeHeader">
-                <div class="header-content">
-                    <div class="search-bar">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search UltraSpace">
-                    </div>
-                    <div class="header-actions">
-                        <img src="https://ui-avatars.com/api/?name=User&background=3a86ff&color=fff" class="user-avatar" alt="Profile" id="profileAvatar">
-                    </div>
-                </div>
-            </header>
-        `;
-        mainArea.insertAdjacentHTML('afterbegin', homeHeaderHTML);
-        
-        const profileAvatar = document.getElementById('profileAvatar');
-        if (profileAvatar) {
-            profileAvatar.addEventListener('click', openProfile);
-            // تحديث الصورة فوراً
-            const user = getAuthenticatedUser();
-            if (user) {
-                updateProfileAvatar(user);
-            }
-        }
-        
+        if (elements.homeHeader) elements.homeHeader.style.display = 'flex';
+        if (elements.viewHeader) elements.viewHeader.style.display = 'none';
     } else {
-        const viewHeaderHTML = `
-            <header class="header view-header mobile-only" id="viewHeader">
-                <div class="header-content">
-                    <button class="back-btn" id="backBtn">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <h1 class="view-title" id="viewTitle">${viewTitles[currentView] || 'View'}</h1>
-                    <div class="header-spacer"></div>
-                </div>
-            </header>
-        `;
-        mainArea.insertAdjacentHTML('afterbegin', viewHeaderHTML);
-        
-        const backBtn = document.getElementById('backBtn');
-        if (backBtn) {
-            backBtn.addEventListener('click', goBack);
-        }
-        
-        const viewTitle = document.getElementById('viewTitle');
-        if (viewTitle) {
-            viewTitle.textContent = viewTitles[currentView] || 'View';
-        }
+        if (elements.homeHeader) elements.homeHeader.style.display = 'none';
+        if (elements.viewHeader) elements.viewHeader.style.display = 'flex';
     }
     
-    forceHeaderVisibility();
-}
-
-function forceHeaderVisibility() {
-    const currentView = appState.currentView;
-    const homeHeader = document.getElementById('homeHeader');
-    const viewHeader = document.getElementById('viewHeader');
-    
-    if (homeHeader) {
-        homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
-    }
-    
-    if (viewHeader) {
-        viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
+    // في الحواسيب، إظهار homeHeader دائماً
+    if (!isMobile && currentView === 'home') {
+        if (elements.homeHeader) elements.homeHeader.style.display = 'flex';
     }
 }
 
+/**
+ * تحديث شريط التنقل السفلي
+ */
 function updateBottomNavVisibility() {
     // إذا لم يكن المستخدم مصادقاً، لا تعرض التنقل السفلي
     if (!appState.isAuthenticated) {
-        if (bottomNav) bottomNav.style.display = 'none';
+        if (elements.bottomNav) elements.bottomNav.style.display = 'none';
         return;
     }
     
-    const isMobile = window.innerWidth <= 1024;
+    const isMobile = appState.isMobile;
     const currentView = appState.currentView;
     
-    if (isMobile && bottomNav) {
-        if (currentView === 'home') {
-            bottomNav.classList.remove('hidden');
-            bottomNav.classList.add('visible');
-            bottomNav.style.display = 'flex';
+    if (isMobile && elements.bottomNav) {
+        if (currentView === 'home' || currentView === 'notifications' || 
+            currentView === 'messages' || currentView === 'settings') {
+            elements.bottomNav.classList.remove('hidden');
+            elements.bottomNav.classList.add('visible');
+            elements.bottomNav.style.display = 'flex';
         } else {
-            bottomNav.classList.remove('visible');
-            bottomNav.classList.add('hidden');
-            bottomNav.style.display = 'none';
+            elements.bottomNav.classList.remove('visible');
+            elements.bottomNav.classList.add('hidden');
+            setTimeout(() => {
+                elements.bottomNav.style.display = 'none';
+            }, 300);
         }
     } else {
-        if (bottomNav) bottomNav.style.display = 'none';
+        if (elements.bottomNav) elements.bottomNav.style.display = 'none';
     }
 }
 
+/**
+ * تحديث عنوان الواجهة
+ */
 function updateViewTitle(viewId) {
-    if (viewTitle) {
-        viewTitle.textContent = viewTitles[viewId] || 'View';
+    if (elements.viewTitle) {
+        elements.viewTitle.textContent = viewTitles[viewId] || 'View';
     }
 }
 
+/**
+ * الرجوع للخلف
+ */
 function goBack() {
     if (appState.viewHistory.length > 1) {
         appState.viewHistory.pop();
@@ -680,14 +605,22 @@ function goBack() {
     }
 }
 
-// إعداد أبعاد الـ iframe - محسنة لجميع الصفحات
+// ========== إدارة الـ iframes ==========
+
+/**
+ * إعداد أبعاد الـ iframe
+ */
 function setupIframeDimensions(iframe) {
-    const isMobile = window.innerWidth <= 1024;
+    const isMobile = appState.isMobile;
     
     if (isMobile) {
-        // للهواتف: ارتفاع كامل الشاشة
-        iframe.style.height = '100vh';
-        iframe.style.minHeight = '100vh';
+        // للهواتف: ارتفاع كامل الشاشة مع مراعاة الهيدر
+        const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
+        const viewportHeight = window.innerHeight;
+        const availableHeight = viewportHeight - headerHeight;
+        
+        iframe.style.height = availableHeight + 'px';
+        iframe.style.minHeight = availableHeight + 'px';
         iframe.style.maxHeight = 'none';
     } else {
         // للحواسيب: ارتفاع متكيف
@@ -703,8 +636,12 @@ function setupIframeDimensions(iframe) {
     // إزالة الحدود والزوايا المدورة
     iframe.style.border = 'none';
     iframe.style.borderRadius = '0';
+    iframe.style.width = '100%';
 }
 
+/**
+ * إعداد تغيير حجم الـ iframe
+ */
 function setupIframeResizing() {
     const iframes = document.querySelectorAll('.ai-iframe, .external-iframe');
     
@@ -716,12 +653,15 @@ function setupIframeResizing() {
         });
         
         iframe.addEventListener('error', function() {
-            console.error('Iframe failed to load:', this.src);
+            console.error('❌ فشل تحميل الـ iframe:', this.src);
             setupIframeDimensions(this);
         });
     });
 }
 
+/**
+ * ضبط ارتفاع الـ iframe
+ */
 function adjustIframeHeight(iframe) {
     try {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -736,26 +676,37 @@ function adjustIframeHeight(iframe) {
                 iframeDoc.documentElement.clientHeight
             );
             
-            const isMobile = window.innerWidth <= 1024;
+            const isMobile = appState.isMobile;
             if (isMobile) {
-                // للهواتف: استخدام الارتفاع الكامل دائماً
-                iframe.style.height = '100vh';
+                // للهواتف: استخدام الارتفاع الكامل مع الهيدر
+                const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
+                const viewportHeight = window.innerHeight;
+                const availableHeight = viewportHeight - headerHeight;
+                iframe.style.height = availableHeight + 'px';
             } else {
                 // للحواسيب: استخدام الارتفاع الفعلي للصفحة
                 iframe.style.height = height + 'px';
             }
         }
     } catch (error) {
-        console.warn('Cannot access iframe content:', error);
+        console.warn('⚠️ لا يمكن الوصول إلى محتوى الـ iframe:', error);
         setupIframeDimensions(iframe);
     }
 }
 
+/**
+ * إعداد معالج تغيير حجم النافذة
+ */
 function setupIframeResizeHandler() {
     let resizeTimeout;
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
+            appState.isMobile = window.innerWidth <= 1024;
+            
+            updateHeaderVisibility();
+            updateBottomNavVisibility();
+            
             const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
             if (activeIframe) {
                 setupIframeDimensions(activeIframe);
@@ -767,24 +718,27 @@ function setupIframeResizeHandler() {
     });
 }
 
-// وظيفة محسنة لتحميل الصفحات الخارجية
+/**
+ * تحميل الصفحات الخارجية
+ */
 async function loadExternalPage(url, title = 'Page') {
     // إذا لم يكن المستخدم مصادقاً، لا تسمح بتحميل الصفحات
     if (!appState.isAuthenticated) {
-        console.log('🚫 User not authenticated, cannot load external pages');
+        console.log('🚫 المستخدم غير مصادق، لا يمكن تحميل الصفحات');
         return false;
     }
     
+    console.log(`🌐 جاري تحميل الصفحة الخارجية: ${url}`);
     appState.isLoading = true;
     
     try {
-        if (externalIframe) {
-            setupIframeForLoading(externalIframe);
+        if (elements.externalIframe) {
+            setupIframeForLoading(elements.externalIframe);
             
-            externalIframe.src = url;
+            elements.externalIframe.src = url;
             viewTitles.externalPage = title;
             
-            externalIframe.onload = function() {
+            elements.externalIframe.onload = function() {
                 setupIframeDimensions(this);
                 setTimeout(() => {
                     adjustIframeHeight(this);
@@ -792,9 +746,9 @@ async function loadExternalPage(url, title = 'Page') {
                     const urlParams = new URLSearchParams(window.location.search);
                     const postId = urlParams.get('post');
                     
-                    if (postId && externalIframe.contentWindow) {
+                    if (postId && elements.externalIframe.contentWindow) {
                         setTimeout(() => {
-                            externalIframe.contentWindow.postMessage({
+                            elements.externalIframe.contentWindow.postMessage({
                                 type: 'SHOW_POST',
                                 postId: postId
                             }, '*');
@@ -805,8 +759,8 @@ async function loadExternalPage(url, title = 'Page') {
                 appState.isLoading = false;
             };
             
-            externalIframe.onerror = function() {
-                console.error('Failed to load iframe content:', url);
+            elements.externalIframe.onerror = function() {
+                console.error('❌ فشل تحميل محتوى الـ iframe:', url);
                 setupIframeDimensions(this);
                 appState.isLoading = false;
                 showErrorView();
@@ -818,13 +772,16 @@ async function loadExternalPage(url, title = 'Page') {
         return true;
         
     } catch (error) {
-        console.error('Error loading page:', error);
+        console.error('❌ خطأ في تحميل الصفحة:', error);
         showErrorView();
         appState.isLoading = false;
         return false;
     }
 }
 
+/**
+ * إعداد الـ iframe للتحميل
+ */
 function setupIframeForLoading(iframe) {
     iframe.style.opacity = '0.7';
     setupIframeDimensions(iframe);
@@ -834,18 +791,23 @@ function setupIframeForLoading(iframe) {
     }, 500);
 }
 
+/**
+ * فتح الدردشة AI
+ */
 function openAIChat() {
-    if (aiIframe) {
-        setupIframeForLoading(aiIframe);
+    console.log('🤖 فتح الدردشة AI...');
+    
+    if (elements.aiIframe) {
+        setupIframeForLoading(elements.aiIframe);
         
-        aiIframe.onload = function() {
+        elements.aiIframe.onload = function() {
             setupIframeDimensions(this);
             setTimeout(() => {
                 adjustIframeHeight(this);
             }, 500);
         };
         
-        aiIframe.onerror = function() {
+        elements.aiIframe.onerror = function() {
             setupIframeDimensions(this);
         };
     }
@@ -853,26 +815,88 @@ function openAIChat() {
     loadExternalPage('Ai/AI.html', 'UltraSpace AI');
 }
 
+/**
+ * فتح التحقق من الشارة الزرقاء
+ */
 function openBlueBadgeVerification() {
+    console.log('🔵 فتح التحقق من الشارة الزرقاء...');
     loadExternalPage('Blue Badge Verification.html', 'Blue Badge Verification');
 }
 
+/**
+ * فتح الملف الشخصي
+ */
 function openProfile() {
+    console.log('👤 فتح الملف الشخصي...');
     loadExternalPage('Profile/Profile.html', 'Edit Profile');
 }
 
+/**
+ * فتح مركز المساعدة
+ */
 function openHelpCenter() {
+    console.log('❓ فتح مركز المساعدة...');
     loadExternalPage('HCA.html', 'Help Center');
 }
 
+/**
+ * إظهار واجهة الخطأ
+ */
 function showErrorView() {
+    console.error('🚨 إظهار واجهة الخطأ');
     switchView('error');
     appState.isLoading = false;
 }
 
-// إعداد مستمعي الأحداث
+// ========== إعدادات التطبيق ==========
+
+/**
+ * تطبيق اللغة
+ */
+function applyLanguage() {
+    document.documentElement.lang = appState.language;
+    localStorage.setItem('language', appState.language);
+    
+    if (elements.languageSelect) {
+        elements.languageSelect.value = appState.language;
+    }
+    
+    console.log(`🌐 تم تطبيق اللغة: ${appState.language}`);
+}
+
+/**
+ * إخفاء جميع عناصر واجهة المستخدم
+ */
+function hideAllUIElements() {
+    console.log('👻 إخفاء جميع عناصر واجهة المستخدم');
+    
+    // إخفاء الشريط الجانبي
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) sidebar.style.display = 'none';
+    
+    // إخفاء التنقل السفلي
+    if (elements.bottomNav) elements.bottomNav.style.display = 'none';
+    
+    // إخفاء الهيدرات
+    if (elements.homeHeader) elements.homeHeader.style.display = 'none';
+    if (elements.viewHeader) elements.viewHeader.style.display = 'none';
+    
+    // إخفاء جميع الواجهات
+    Object.values(views).forEach(view => {
+        if (view && view.id !== 'authView') {
+            view.style.display = 'none';
+        }
+    });
+}
+
+/**
+ * إعداد مستمعي الأحداث
+ */
 function setupEventListeners() {
-    navButtons.forEach(btn => {
+    console.log('🎯 إعداد مستمعي الأحداث...');
+    
+    // أزرار التنقل
+    elements.navButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             const viewId = btn.dataset.view;
@@ -880,36 +904,40 @@ function setupEventListeners() {
         });
     });
     
-    if (backBtn) {
-        backBtn.addEventListener('click', goBack);
+    // زر الرجوع
+    if (elements.backBtn) {
+        elements.backBtn.addEventListener('click', goBack);
     }
     
-    if (languageSelect) {
-        languageSelect.addEventListener('change', (e) => {
+    // اختيار اللغة
+    if (elements.languageSelect) {
+        elements.languageSelect.addEventListener('change', (e) => {
             appState.language = e.target.value;
             applyLanguage();
         });
     }
     
-    if (profileAvatar) {
-        profileAvatar.addEventListener('click', openProfile);
+    // صورة الملف الشخصي
+    if (elements.profileAvatar) {
+        elements.profileAvatar.addEventListener('click', openProfile);
     }
     
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to logout?')) {
-                logout();
-            }
+    // زر تسجيل الخروج
+    if (elements.logoutBtn) {
+        elements.logoutBtn.addEventListener('click', () => {
+            logout();
         });
     }
     
-    if (errorHomeBtn) {
-        errorHomeBtn.addEventListener('click', () => {
+    // زر الصفحة الرئيسية في واجهة الخطأ
+    if (elements.errorHomeBtn) {
+        elements.errorHomeBtn.addEventListener('click', () => {
             switchView('home');
         });
     }
     
-    messageItems.forEach(item => {
+    // عناصر الرسائل
+    elements.messageItems.forEach(item => {
         item.addEventListener('click', () => {
             const userType = item.getAttribute('data-user');
             
@@ -921,15 +949,24 @@ function setupEventListeners() {
         });
     });
     
-    document.addEventListener('click', (e) => {
-        // إذا لم يكن المستخدم مصادقاً، لا تسمح بالنقر على أي عناصر
-        if (!appState.isAuthenticated) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🚫 User not authenticated, action blocked');
-            return;
-        }
+    // شريط البحث
+    if (elements.searchInput) {
+        elements.searchInput.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
         
+        elements.searchInput.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+        
+        elements.searchInput.addEventListener('input', function() {
+            // يمكن إضافة وظيفة البحث هنا لاحقاً
+            console.log('🔍 بحث:', this.value);
+        });
+    }
+    
+    // النقر على القصص
+    document.addEventListener('click', (e) => {
         if (e.target.closest('.story-item')) {
             const storyItem = e.target.closest('.story-item');
             const storyName = storyItem.querySelector('.story-name').textContent;
@@ -939,6 +976,7 @@ function setupEventListeners() {
             }
         }
         
+        // النقر على الصفحات المقترحة
         if (e.target.closest('.page-item')) {
             const pageItem = e.target.closest('.page-item');
             const pageName = pageItem.querySelector('.page-name').textContent;
@@ -955,6 +993,7 @@ function setupEventListeners() {
             }
         }
         
+        // النقر على عناصر الإعدادات
         if (e.target.closest('.settings-item[data-page]')) {
             const settingsItem = e.target.closest('.settings-item[data-page]');
             const pageUrl = settingsItem.getAttribute('data-page');
@@ -974,47 +1013,86 @@ function setupEventListeners() {
         }
     });
     
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-            updateHeaderVisibility();
-            updateBottomNavVisibility();
-            
-            const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
-            if (activeIframe) {
-                setupIframeDimensions(activeIframe);
-            }
-        }, 250);
-    });
+    // إعداد مستمع رسائل الـ iframe
+    setupIframeMessageListener();
+}
+
+/**
+ * تهيئة التطبيق
+ */
+function initApp() {
+    console.log('🚀 بدء تهيئة تطبيق UltraSpace...');
     
-    const headerFixInterval = setInterval(() => {
-        const currentView = appState.currentView;
-        const isMobile = window.innerWidth <= 1024;
-        
-        const homeHeader = document.getElementById('homeHeader');
-        if (homeHeader) {
-            if (isMobile) {
-                homeHeader.style.display = currentView === 'home' ? 'flex' : 'none';
-            } else {
-                homeHeader.style.display = 'flex';
-            }
-        }
-        
-        const viewHeader = document.getElementById('viewHeader');
-        if (viewHeader) {
-            if (isMobile) {
-                viewHeader.style.display = currentView === 'home' ? 'none' : 'flex';
-            } else {
-                viewHeader.style.display = 'none';
-            }
-        }
-    }, 100);
+    // أولاً: التحقق من المصادقة
+    const isAuthenticated = checkBYPROAuthentication();
     
-    window.addEventListener('beforeunload', () => {
-        clearInterval(headerFixInterval);
-    });
+    if (!isAuthenticated) {
+        console.log('🔐 المستخدم غير مصادق، عرض واجهة المصادقة كاملة الشاشة');
+        // إخفاء شاشة التحميل مباشرة
+        if (elements.loadingScreen) elements.loadingScreen.remove();
+        if (elements.appContainer) elements.appContainer.style.display = 'block';
+        
+        // إخفاء جميع العناصر الأخرى
+        hideAllUIElements();
+        
+        // إنشاء واجهة المصادقة كاملة الشاشة
+        createAuthView();
+        return;
+    }
+    
+    // إذا كان المستخدم مصادقاً، متابعة التحميل العادي
+    console.log('✅ المستخدم مصادق، جاري تحميل UltraSpace بشكل طبيعي');
+    
+    // ثانياً: تحقق من معلمات URL للروابط المباشرة
+    const hasUrlParams = handleUrlParameters();
+    
+    if (!hasUrlParams) {
+        // التحميل العادي إذا لم توجد معلمات
+        setTimeout(() => {
+            if (elements.loadingScreen) {
+                elements.loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    elements.loadingScreen.remove();
+                    if (elements.appContainer) elements.appContainer.style.display = 'block';
+                    setupEventListeners();
+                    updateHeaderVisibility();
+                    updateBottomNavVisibility();
+                    
+                    setupIframeResizing();
+                    setupIframeResizeHandler();
+                    
+                }, 500);
+            }
+        }, 2000);
+    } else {
+        // إذا كانت هناك معلمات، تخطى شاشة التحميل
+        if (elements.loadingScreen) elements.loadingScreen.remove();
+        if (elements.appContainer) elements.appContainer.style.display = 'block';
+        setupEventListeners();
+        updateHeaderVisibility();
+        updateBottomNavVisibility();
+        setupIframeResizing();
+        setupIframeResizeHandler();
+    }
+
+    applyLanguage();
+    displayUserInfo();
+    
+    console.log('🎉 تم تهيئة التطبيق بنجاح!');
 }
 
 // بدء التطبيق
 document.addEventListener('DOMContentLoaded', initApp);
+
+// تصدير الدوال للاستخدام العالمي (لأغراض التصحيح)
+window.UltraSpace = {
+    appState,
+    switchView,
+    loadExternalPage,
+    openAIChat,
+    openProfile,
+    logout,
+    getAuthenticatedUser
+};
+
+console.log('📄 تم تحميل script.js بنجاح');
