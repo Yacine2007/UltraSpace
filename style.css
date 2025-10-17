@@ -366,6 +366,114 @@ body {
     overflow-y: auto;
 }
 
+/* ========== إصلاح كامل لواجهات الـ iframe ========== */
+.view.active#aiChatView .view-content,
+.view.active#externalPageView .view-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* حاوية الـ iframe */
+.ai-chat-container,
+.external-page-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* الـ iframe نفسه */
+.ai-iframe, 
+.external-iframe, 
+.auth-iframe {
+    width: 100%;
+    height: 100%;
+    border: none !important;
+    border-radius: 0 !important;
+    background: white;
+    flex: 1;
+}
+
+/* إخفاء شريط التمرير في الهواتف */
+@media (max-width: 1024px) {
+    .view.active#aiChatView,
+    .view.active#externalPageView {
+        height: calc(100vh - 60px) !important;
+    }
+    
+    .view.active#aiChatView .view-content,
+    .view.active#externalPageView .view-content {
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+    
+    .ai-chat-container,
+    .external-page-container {
+        height: 100% !important;
+    }
+    
+    .ai-iframe, 
+    .external-iframe {
+        height: 100% !important;
+        min-height: 100% !important;
+        max-height: none !important;
+    }
+    
+    /* إخفاء شريط التمرير في الـ iframe */
+    .ai-iframe::-webkit-scrollbar,
+    .external-iframe::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .ai-iframe,
+    .external-iframe {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+}
+
+/* للحواسيب */
+@media (min-width: 1025px) {
+    .view.active#aiChatView,
+    .view.active#externalPageView {
+        height: calc(100vh - var(--header-height)) !important;
+    }
+    
+    .ai-iframe, 
+    .external-iframe {
+        min-height: 600px;
+        max-height: none !important;
+    }
+}
+
+/* واجهة المصادقة كاملة الشاشة */
+.auth-container {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10000;
+}
+
+.auth-iframe {
+    width: 100%;
+    height: 100vh;
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+/* إخفاء العناصر عند العرض المصادق */
+.hidden-during-auth {
+    display: none !important;
+}
+
 /* Welcome Section - تم التحديث */
 .welcome-section {
     text-align: center;
@@ -490,116 +598,6 @@ body {
     color: var(--text-muted);
     font-size: 0.82rem;
     font-weight: 500;
-}
-
-/* ========== AI Chat View & External Page View - إصلاح كامل وجذري ========== */
-/* تحسينات الـ iframe */
-.ai-iframe, .external-iframe, .auth-iframe {
-    width: 100%;
-    border: none;
-    border-radius: 0;
-    background: white;
-    transition: all 0.3s ease;
-}
-
-/* إزالة الحدود والزوايا المدورة */
-.view-content iframe {
-    border: none !important;
-    border-radius: 0 !important;
-}
-
-/* تحسينات خاصة للهواتف */
-@media (max-width: 1024px) {
-    .ai-iframe, .external-iframe {
-        height: 100vh !important;
-        min-height: 100vh !important;
-        max-height: none !important;
-    }
-    
-    .ai-chat-container, .external-page-container {
-        height: 100vh !important;
-    }
-    
-    /* في الهواتف: الصفحات الخارجية كاملة الشاشة مع شريط العنوان فقط */
-    .view.active#aiChatView,
-    .view.active#externalPageView {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        z-index: 1000 !important;
-        background: var(--background-color);
-    }
-    
-    .view.active#aiChatView .view-content,
-    .view.active#externalPageView .view-content {
-        padding: 0 !important;
-        margin: 0 !important;
-        height: 100vh !important;
-        width: 100vw !important;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .view.active#aiChatView .view-header,
-    .view.active#externalPageView .view-header {
-        display: flex !important;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 1001;
-        background: rgba(30, 30, 30, 0.95);
-        backdrop-filter: blur(20px);
-    }
-    
-    .view.active#aiChatView .ai-iframe,
-    .view.active#externalPageView .external-iframe {
-        height: calc(100vh - 60px) !important;
-        margin-top: 60px;
-    }
-}
-
-/* تحسينات للشاشات الكبيرة */
-@media (min-width: 1025px) {
-    .ai-iframe, .external-iframe {
-        min-height: 600px;
-        max-height: none !important;
-    }
-}
-
-/* واجهة المصادقة كاملة الشاشة */
-.auth-container {
-    width: 100%;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 10000;
-}
-
-.auth-iframe {
-    width: 100%;
-    height: 100vh;
-    border: none !important;
-    border-radius: 0 !important;
-}
-
-/* إخفاء العناصر عند العرض المصادق */
-.hidden-during-auth {
-    display: none !important;
-}
-
-/* إصلاح كامل للمحتوى في واجهات الـ iframe */
-.view.active#aiChatView .view-content,
-.view.active#externalPageView .view-content {
-    padding: 0 !important;
-    margin: 0 !important;
-    height: 100% !important;
-    width: 100% !important;
-    display: flex;
-    flex-direction: column;
 }
 
 /* Settings - تم التحديث */
@@ -1004,12 +1002,7 @@ body {
     /* إصلاحات إضافية للهواتف */
     .view.active#aiChatView,
     .view.active#externalPageView {
-        height: 100vh !important;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        z-index: 1000 !important;
+        height: calc(100vh - 60px) !important;
     }
     
     .ai-chat-container,
@@ -1019,8 +1012,8 @@ body {
     
     .view.active#aiChatView .view-content,
     .view.active#externalPageView .view-content {
-        height: 100vh !important;
-        padding: 0 !important;
+        height: 100% !important;
+        overflow: hidden !important;
     }
 
     .header {
@@ -1033,6 +1026,18 @@ body {
 
     .view-header {
         height: 60px;
+    }
+    
+    /* إخفاء شريط التمرير في الـ iframe للهواتف */
+    .ai-iframe::-webkit-scrollbar,
+    .external-iframe::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .ai-iframe,
+    .external-iframe {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
     }
 }
 
