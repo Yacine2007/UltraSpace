@@ -1,5 +1,3 @@
-[file name]: script.js
-[file content begin]
 // حالة التطبيق
 const appState = {
     currentView: 'home',
@@ -9,8 +7,7 @@ const appState = {
     isAuthenticated: false,
     userAvatarUrl: localStorage.getItem('ultraspace_user_avatar_url') || '',
     currentPostId: null,
-    isMobile: window.innerWidth <= 1024,
-    loadingStates: {}
+    isMobile: window.innerWidth <= 1024
 };
 
 // عناصر DOM
@@ -30,9 +27,7 @@ const elements = {
     aiIframe: document.getElementById('aiIframe'),
     bottomNav: document.getElementById('bottomNav'),
     viewTitle: document.getElementById('viewTitle'),
-    searchInput: document.querySelector('.search-bar input'),
-    searchBar: document.querySelector('.search-bar'),
-    homeProfileAvatar: document.getElementById('homeProfileAvatar')
+    searchInput: document.querySelector('.search-bar input')
 };
 
 // عناصر الواجهات
@@ -57,7 +52,220 @@ const viewTitles = {
     error: 'Error'
 };
 
-// ========== نظام المصادقة المحسّن ==========
+// ========== إضافة أنماط CSS ديناميكية ==========
+
+function addDynamicStyles() {
+    const styles = `
+        /* تحسينات شريط العنوان العلوي */
+        .view-header {
+            position: relative;
+            background: var(--background-color);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .view-header-content {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            min-height: 60px;
+        }
+        
+        .back-btn-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .back-btn-circle:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+        
+        .back-btn-circle:active {
+            transform: translateY(0);
+        }
+        
+        .view-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0;
+        }
+        
+        /* تحسينات شريط البحث والصورة */
+        .search-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--card-background);
+            border-radius: 25px;
+            margin: 0 16px;
+            flex: 1;
+            max-width: 400px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar-container.focused {
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+        
+        .header-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .header-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* تحسينات معلومات المستخدم في الإعدادات */
+        .user-info-section {
+            text-align: center;
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--card-background), var(--background-color));
+            margin-bottom: 16px;
+        }
+        
+        .user-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 16px;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        
+        .user-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        
+        .user-id {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+            background: var(--background-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .user-email {
+            font-size: 0.95rem;
+            color: var(--primary-color);
+            margin-bottom: 0;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+        
+        /* تأثيرات التحميل */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--background-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* تحسينات الـ iframe */
+        .iframe-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .iframe-loading {
+            opacity: 0.7;
+            filter: blur(2px);
+            transition: all 0.3s ease;
+        }
+        
+        /* تحسينات واجهة المصادقة */
+        .auth-notice {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 16px;
+            text-align: center;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .allowed-domain {
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 4px;
+        }
+    `;
+    
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+}
+
+// ========== نظام المصادقة ==========
 
 /**
  * التحقق من تسجيل الدخول في B.Y PRO Accounts
@@ -119,11 +327,11 @@ function createAuthView() {
     const authViewHTML = `
         <div class="view active" id="authView" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10000; background: var(--background-color);">
             <div class="view-content" style="height: 100vh; padding: 0; margin: 0;">
+                <div class="auth-notice">
+                    🔐 المصادقة الآمنة - مسموح بهذا الرابط: 
+                    <span class="allowed-domain">ultraspace.wuaze.com</span>
+                </div>
                 <div class="auth-container">
-                    <div class="auth-header" style="text-align: center; padding: 20px; background: var(--primary-color); color: white;">
-                        <h2 style="margin: 0; font-size: 1.5rem;">UltraSpace Authentication</h2>
-                        <p style="margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9;">Allowed Domain: ultraspace.wuaze.com</p>
-                    </div>
                     <iframe 
                         src="https://yacine2007.github.io/secure-auth-app/login.html" 
                         class="auth-iframe" 
@@ -215,66 +423,148 @@ function extractAndSaveUserAvatar() {
 }
 
 /**
- * عرض معلومات المستخدم
+ * تحديث واجهة الهيدر الرئيسية
+ */
+function updateMainHeader() {
+    const homeHeader = document.getElementById('homeHeader');
+    if (!homeHeader || !appState.isAuthenticated) return;
+    
+    // البحث عن شريط البحث الحالي أو إنشاؤه
+    let searchContainer = homeHeader.querySelector('.search-bar-container');
+    let headerAvatar = homeHeader.querySelector('.header-avatar');
+    
+    if (!searchContainer) {
+        searchContainer = document.createElement('div');
+        searchContainer.className = 'search-bar-container';
+        searchContainer.innerHTML = `
+            <i class="fas fa-search" style="color: var(--text-muted);"></i>
+            <input type="text" placeholder="Search..." style="border: none; background: none; outline: none; flex: 1; color: var(--text-color);">
+        `;
+        
+        // إضافة مستمع للأحداث للبحث
+        const searchInput = searchContainer.querySelector('input');
+        searchInput.addEventListener('focus', function() {
+            searchContainer.classList.add('focused');
+        });
+        
+        searchInput.addEventListener('blur', function() {
+            searchContainer.classList.remove('focused');
+        });
+        
+        searchInput.addEventListener('input', function() {
+            console.log('🔍 بحث:', this.value);
+        });
+    }
+    
+    if (!headerAvatar) {
+        headerAvatar = document.createElement('img');
+        headerAvatar.className = 'header-avatar';
+        headerAvatar.alt = 'Profile';
+        headerAvatar.addEventListener('click', openProfile);
+    }
+    
+    // تحديث صورة المستخدم
+    const user = getAuthenticatedUser();
+    if (user && appState.userAvatarUrl) {
+        headerAvatar.src = appState.userAvatarUrl + '?t=' + Date.now();
+        headerAvatar.onerror = function() {
+            this.src = getDefaultAvatarUrl(user);
+        };
+    } else {
+        headerAvatar.src = getDefaultAvatarUrl(user || { id: 'user' });
+    }
+    
+    // إضافة العناصر إلى الهيدر إذا لم تكن موجودة
+    if (!homeHeader.querySelector('.search-bar-container')) {
+        homeHeader.appendChild(searchContainer);
+    }
+    if (!homeHeader.querySelector('.header-avatar')) {
+        homeHeader.appendChild(headerAvatar);
+    }
+}
+
+/**
+ * تحديث شريط العنوان للواجهات
+ */
+function updateViewHeader(viewId) {
+    const viewHeader = document.getElementById('viewHeader');
+    if (!viewHeader) return;
+    
+    // إنشاء هيكل شريط العنوان إذا لم يكن موجوداً
+    let headerContent = viewHeader.querySelector('.view-header-content');
+    if (!headerContent) {
+        headerContent = document.createElement('div');
+        headerContent.className = 'view-header-content';
+        viewHeader.innerHTML = '';
+        viewHeader.appendChild(headerContent);
+    }
+    
+    // زر الرجوع الدائري
+    let backBtnCircle = headerContent.querySelector('.back-btn-circle');
+    if (!backBtnCircle) {
+        backBtnCircle = document.createElement('div');
+        backBtnCircle.className = 'back-btn-circle';
+        backBtnCircle.innerHTML = '<i class="fas fa-arrow-left" style="color: var(--text-color);"></i>';
+        backBtnCircle.addEventListener('click', goBack);
+        headerContent.appendChild(backBtnCircle);
+    }
+    
+    // عنوان الواجهة
+    let viewTitle = headerContent.querySelector('.view-title');
+    if (!viewTitle) {
+        viewTitle = document.createElement('h1');
+        viewTitle.className = 'view-title';
+        headerContent.appendChild(viewTitle);
+    }
+    
+    viewTitle.textContent = viewTitles[viewId] || 'View';
+}
+
+/**
+ * عرض معلومات المستخدم في الإعدادات
  */
 function displayUserInfo() {
     const user = getAuthenticatedUser();
-    if (user) {
-        console.log('👤 عرض معلومات المستخدم:', user);
-        
-        // تحديث الصورة الرمزية في الهيدر
-        updateProfileAvatar(user);
-        
-        // تحديث الصورة في الإعدادات
-        updateSettingsAvatar(user);
-        
-        // تحديث الصورة في الصفحة الرئيسية
-        updateHomeProfileAvatar(user);
-    }
+    if (!user) return;
+    
+    console.log('👤 عرض معلومات المستخدم:', user);
+    
+    // تحديث الصورة الرمزية في الهيدر الرئيسي
+    updateMainHeader();
+    
+    // تحديث معلومات المستخدم في الإعدادات
+    updateSettingsUserInfo(user);
 }
 
 /**
- * تحديث الصورة الرمزية في الهيدر
+ * تحديث معلومات المستخدم في الإعدادات
  */
-function updateProfileAvatar(user) {
-    const profileAvatar = document.getElementById('profileAvatar');
-    if (profileAvatar) {
-        // استخدام الرابط المحفوظ أو من البيانات الحالية
-        const avatarUrl = appState.userAvatarUrl || user.image;
-        
-        if (avatarUrl) {
-            profileAvatar.src = avatarUrl + '?t=' + Date.now(); // إضافة timestamp لمنع التخزين المؤقت
-            profileAvatar.alt = user.name || `User ${user.id}`;
-            profileAvatar.onerror = function() {
-                // إذا فشل تحميل الصورة، استخدم الصورة الافتراضية
-                this.src = getDefaultAvatarUrl(user);
-            };
-        } else {
-            // استخدام الصورة الافتراضية
-            profileAvatar.src = getDefaultAvatarUrl(user);
-        }
-        profileAvatar.alt = user.name || `User ${user.id}`;
+function updateSettingsUserInfo(user) {
+    const settingsSection = document.querySelector('.settings-section');
+    if (!settingsSection) return;
+    
+    // إزالة قسم معلومات المستخدم الحالي إذا كان موجوداً
+    const existingUserInfo = settingsSection.querySelector('.user-info-section');
+    if (existingUserInfo) {
+        existingUserInfo.remove();
     }
-}
-
-/**
- * تحديث الصورة في الصفحة الرئيسية
- */
-function updateHomeProfileAvatar(user) {
-    if (elements.homeProfileAvatar) {
-        const avatarUrl = appState.userAvatarUrl || user.image;
-        
-        if (avatarUrl) {
-            elements.homeProfileAvatar.src = avatarUrl + '?t=' + Date.now();
-            elements.homeProfileAvatar.alt = user.name || `User ${user.id}`;
-            elements.homeProfileAvatar.onerror = function() {
-                this.src = getDefaultAvatarUrl(user);
-            };
-        } else {
-            elements.homeProfileAvatar.src = getDefaultAvatarUrl(user);
-        }
-        elements.homeProfileAvatar.alt = user.name || `User ${user.id}`;
-    }
+    
+    // إنشاء قسم معلومات المستخدم الجديد
+    const userInfoHTML = `
+        <div class="user-info-section">
+            <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; overflow: hidden; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));">
+                <img src="${appState.userAvatarUrl || user.image || getDefaultAvatarUrl(user)}" 
+                     alt="${user.name || 'User'}" 
+                     class="user-avatar-large"
+                     onerror="this.src='${getDefaultAvatarUrl(user)}'">
+            </div>
+            <div class="user-name">${user.name || `User ${user.id}`}</div>
+            <div class="user-id">ID: ${user.id}</div>
+            <div class="user-email">${user.email || 'No email provided'}</div>
+        </div>
+    `;
+    
+    settingsSection.insertAdjacentHTML('afterbegin', userInfoHTML);
 }
 
 /**
@@ -282,54 +572,6 @@ function updateHomeProfileAvatar(user) {
  */
 function getDefaultAvatarUrl(user) {
     return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.id) + '&background=3a86ff&color=fff';
-}
-
-/**
- * تحديث الصورة في الإعدادات
- */
-function updateSettingsAvatar(user) {
-    let settingsAvatar = document.getElementById('settingsAvatar');
-    
-    if (!settingsAvatar) {
-        // إنشاء عنصر الصورة في الإعدادات إذا لم يكن موجوداً
-        const settingsSection = document.querySelector('.settings-section');
-        if (settingsSection) {
-            const avatarUrl = appState.userAvatarUrl || user.image;
-            const avatarHTML = `
-                <div class="settings-item" style="text-align: center; padding: 20px; border-bottom: 1px solid var(--border-color);">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; overflow: hidden; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); position: relative;">
-                        <div class="avatar-loading" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loadingShimmer 1.5s infinite;"></div>
-                        <img src="${avatarUrl || getDefaultAvatarUrl(user)}" 
-                             alt="${user.name || 'User'}" 
-                             style="width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2;"
-                             onload="this.style.opacity='1'"
-                             onerror="this.src='${getDefaultAvatarUrl(user)}'"
-                             id="settingsAvatar"
-                             style="opacity: 0; transition: opacity 0.3s ease;">
-                    </div>
-                    <div class="user-info" style="margin-top: 15px;">
-                        <div style="font-weight: 700; color: var(--text-color); font-size: 1.1rem; margin-bottom: 5px;">${user.name || `User ${user.id}`}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 3px;">ID: ${user.id || 'N/A'}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">${user.email || ''}</div>
-                    </div>
-                </div>
-            `;
-            settingsSection.insertAdjacentHTML('afterbegin', avatarHTML);
-            settingsAvatar = document.getElementById('settingsAvatar');
-        }
-    }
-    
-    // تحديث الصورة الموجودة
-    if (settingsAvatar) {
-        const avatarUrl = appState.userAvatarUrl || user.image;
-        if (avatarUrl) {
-            settingsAvatar.src = avatarUrl + '?t=' + Date.now();
-            settingsAvatar.alt = user.name || `User ${user.id}`;
-            settingsAvatar.onerror = function() {
-                this.src = getDefaultAvatarUrl(user);
-            };
-        }
-    }
 }
 
 /**
@@ -486,10 +728,6 @@ function setupIframeMessageListener() {
             const height = event.data.height;
             resizeIframe(height);
         }
-        
-        if (event.data && event.data.type === 'CONTENT_LOADING') {
-            showContentLoading(event.data.isLoading);
-        }
     });
 }
 
@@ -510,7 +748,7 @@ function resizeIframe(height) {
     }
 }
 
-// ========== إدارة الواجهات والتنقل المحسّن ==========
+// ========== إدارة الواجهات والتنقل ==========
 
 /**
  * تبديل الواجهة
@@ -554,7 +792,7 @@ function switchView(viewId) {
         
         updateHeaderVisibility();
         updateBottomNavVisibility();
-        updateViewTitle(viewId);
+        updateViewHeader(viewId);
         
         // إعداد الـ iframe إذا لزم الأمر
         if (viewId === 'aiChat' || viewId === 'externalPage') {
@@ -562,6 +800,7 @@ function switchView(viewId) {
                 const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
                 if (activeIframe) {
                     setupIframeDimensions(activeIframe);
+                    showLoadingOverlay(activeIframe);
                 }
             }, 100);
         }
@@ -583,19 +822,17 @@ function updateHeaderVisibility() {
     const isMobile = appState.isMobile;
     
     if (currentView === 'home') {
-        if (elements.homeHeader) elements.homeHeader.style.display = 'flex';
+        if (elements.homeHeader) {
+            elements.homeHeader.style.display = 'flex';
+            updateMainHeader();
+        }
         if (elements.viewHeader) elements.viewHeader.style.display = 'none';
-        
-        // إظهار شريط البحث والصورة في الصفحة الرئيسية فقط
-        if (elements.searchBar) elements.searchBar.style.display = 'flex';
-        if (elements.homeProfileAvatar) elements.homeProfileAvatar.style.display = 'block';
     } else {
         if (elements.homeHeader) elements.homeHeader.style.display = 'none';
-        if (elements.viewHeader) elements.viewHeader.style.display = 'flex';
-        
-        // إخفاء شريط البحث والصورة في الصفحات الأخرى
-        if (elements.searchBar) elements.searchBar.style.display = 'none';
-        if (elements.homeProfileAvatar) elements.homeProfileAvatar.style.display = 'none';
+        if (elements.viewHeader) {
+            elements.viewHeader.style.display = 'flex';
+            updateViewHeader(currentView);
+        }
     }
     
     // في الحواسيب، إظهار homeHeader دائماً
@@ -636,15 +873,6 @@ function updateBottomNavVisibility() {
 }
 
 /**
- * تحديث عنوان الواجهة
- */
-function updateViewTitle(viewId) {
-    if (elements.viewTitle) {
-        elements.viewTitle.textContent = viewTitles[viewId] || 'View';
-    }
-}
-
-/**
  * الرجوع للخلف
  */
 function goBack() {
@@ -657,7 +885,45 @@ function goBack() {
     }
 }
 
-// ========== إدارة الـ iframes المحسّنة ==========
+// ========== إدارة تأثيرات التحميل ==========
+
+/**
+ * إظهار تأثير التحميل للـ iframe
+ */
+function showLoadingOverlay(iframe) {
+    // إنشاء عنصر التحميل إذا لم يكن موجوداً
+    let loadingOverlay = iframe.parentElement.querySelector('.loading-overlay');
+    
+    if (!loadingOverlay) {
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerHTML = '<div class="loading-spinner"></div>';
+        iframe.parentElement.style.position = 'relative';
+        iframe.parentElement.appendChild(loadingOverlay);
+    }
+    
+    // إضافة تأثير التحميل للـ iframe
+    iframe.classList.add('iframe-loading', 'loading-pulse');
+    loadingOverlay.classList.add('active');
+    
+    // إخفاء تأثير التحميل بعد تحميل الـ iframe
+    iframe.addEventListener('load', function() {
+        setTimeout(() => {
+            iframe.classList.remove('iframe-loading', 'loading-pulse');
+            loadingOverlay.classList.remove('active');
+        }, 500);
+    });
+    
+    // إخفاء تأثير التحميل في حالة الخطأ
+    iframe.addEventListener('error', function() {
+        setTimeout(() => {
+            iframe.classList.remove('iframe-loading', 'loading-pulse');
+            loadingOverlay.classList.remove('active');
+        }, 1000);
+    });
+}
+
+// ========== إدارة الـ iframes ==========
 
 /**
  * إعداد أبعاد الـ iframe
@@ -667,7 +933,7 @@ function setupIframeDimensions(iframe) {
     
     if (isMobile) {
         // للهواتف: ارتفاع كامل الشاشة مع مراعاة الهيدر
-        const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
+        const headerHeight = document.querySelector('.view-header')?.offsetHeight || 60;
         const viewportHeight = window.innerHeight;
         const availableHeight = viewportHeight - headerHeight;
         
@@ -677,7 +943,7 @@ function setupIframeDimensions(iframe) {
     } else {
         // للحواسيب: ارتفاع متكيف
         const viewportHeight = window.innerHeight;
-        const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
+        const headerHeight = document.querySelector('.view-header')?.offsetHeight || 70;
         const availableHeight = viewportHeight - headerHeight;
         
         iframe.style.height = availableHeight + 'px';
@@ -731,7 +997,7 @@ function adjustIframeHeight(iframe) {
             const isMobile = appState.isMobile;
             if (isMobile) {
                 // للهواتف: استخدام الارتفاع الكامل مع الهيدر
-                const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
+                const headerHeight = document.querySelector('.view-header')?.offsetHeight || 60;
                 const viewportHeight = window.innerHeight;
                 const availableHeight = viewportHeight - headerHeight;
                 iframe.style.height = availableHeight + 'px';
@@ -783,9 +1049,6 @@ async function loadExternalPage(url, title = 'Page') {
     console.log(`🌐 جاري تحميل الصفحة الخارجية: ${url}`);
     appState.isLoading = true;
     
-    // إظهار تأثير التحميل
-    showContentLoading(true);
-    
     try {
         if (elements.externalIframe) {
             setupIframeForLoading(elements.externalIframe);
@@ -810,11 +1073,6 @@ async function loadExternalPage(url, title = 'Page') {
                         }, 500);
                     }
                     
-                    // إخفاء تأثير التحميل بعد تحميل المحتوى
-                    setTimeout(() => {
-                        showContentLoading(false);
-                    }, 1000);
-                    
                 }, 500);
                 appState.isLoading = false;
             };
@@ -823,7 +1081,6 @@ async function loadExternalPage(url, title = 'Page') {
                 console.error('❌ فشل تحميل محتوى الـ iframe:', url);
                 setupIframeDimensions(this);
                 appState.isLoading = false;
-                showContentLoading(false);
                 showErrorView();
             };
             
@@ -833,60 +1090,10 @@ async function loadExternalPage(url, title = 'Page') {
         return true;
         
     } catch (error) {
-        console.error('❌ خطأ في تحميل الصفحة:', error);
-        showContentLoading(false);
-        showErrorView();
+        console.error('❌ خطأ في تحميل الصفحة الخارجية:', error);
         appState.isLoading = false;
+        showErrorView();
         return false;
-    }
-}
-
-/**
- * إظهار/إخفاء تأثير تحميل المحتوى
- */
-function showContentLoading(show) {
-    const loadingOverlay = document.getElementById('contentLoadingOverlay');
-    
-    if (show) {
-        if (!loadingOverlay) {
-            const overlayHTML = `
-                <div id="contentLoadingOverlay" style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(255,255,255,0.9);
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 9999;
-                    backdrop-filter: blur(5px);
-                ">
-                    <div class="loading-spinner" style="
-                        width: 50px;
-                        height: 50px;
-                        border: 4px solid #f3f3f3;
-                        border-top: 4px solid var(--primary-color);
-                        border-radius: 50%;
-                        animation: spin 1s linear infinite;
-                        margin-bottom: 20px;
-                    "></div>
-                    <div style="color: var(--text-color); font-size: 1rem; font-weight: 500;">جاري تحميل المحتوى...</div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', overlayHTML);
-        } else {
-            loadingOverlay.style.display = 'flex';
-        }
-    } else {
-        if (loadingOverlay) {
-            loadingOverlay.style.opacity = '0';
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-            }, 300);
-        }
     }
 }
 
@@ -895,122 +1102,77 @@ function showContentLoading(show) {
  */
 function setupIframeForLoading(iframe) {
     iframe.style.opacity = '0.7';
-    setupIframeDimensions(iframe);
+    iframe.style.filter = 'blur(2px)';
+    iframe.style.transition = 'all 0.3s ease';
     
     setTimeout(() => {
         iframe.style.opacity = '1';
+        iframe.style.filter = 'blur(0)';
     }, 500);
-}
-
-/**
- * فتح الدردشة AI
- */
-function openAIChat() {
-    console.log('🤖 فتح الدردشة AI...');
-    
-    if (elements.aiIframe) {
-        setupIframeForLoading(elements.aiIframe);
-        
-        elements.aiIframe.onload = function() {
-            setupIframeDimensions(this);
-            setTimeout(() => {
-                adjustIframeHeight(this);
-            }, 500);
-        };
-        
-        elements.aiIframe.onerror = function() {
-            setupIframeDimensions(this);
-        };
-    }
-    
-    loadExternalPage('Ai/AI.html', 'UltraSpace AI');
-}
-
-/**
- * فتح التحقق من الشارة الزرقاء
- */
-function openBlueBadgeVerification() {
-    console.log('🔵 فتح التحقق من الشارة الزرقاء...');
-    loadExternalPage('Blue Badge Verification.html', 'Blue Badge Verification');
-}
-
-/**
- * فتح الملف الشخصي
- */
-function openProfile() {
-    console.log('👤 فتح الملف الشخصي...');
-    loadExternalPage('Profile/Profile.html', 'Edit Profile');
-}
-
-/**
- * فتح مركز المساعدة
- */
-function openHelpCenter() {
-    console.log('❓ فتح مركز المساعدة...');
-    loadExternalPage('HCA.html', 'Help Center');
 }
 
 /**
  * إظهار واجهة الخطأ
  */
 function showErrorView() {
-    console.error('🚨 إظهار واجهة الخطأ');
     switchView('error');
-    appState.isLoading = false;
 }
 
-// ========== إعدادات التطبيق المحسّنة ==========
+// ========== إعدادات اللغة ==========
 
 /**
- * تطبيق اللغة
+ * تغيير اللغة
  */
-function applyLanguage() {
-    document.documentElement.lang = appState.language;
-    localStorage.setItem('language', appState.language);
+function changeLanguage(lang) {
+    appState.language = lang;
+    localStorage.setItem('language', lang);
     
-    if (elements.languageSelect) {
-        elements.languageSelect.value = appState.language;
-    }
+    // تحديث واجهة المستخدم بناءً على اللغة المختارة
+    updateLanguageUI();
     
-    console.log(`🌐 تم تطبيق اللغة: ${appState.language}`);
+    console.log(`🌐 تم تغيير اللغة إلى: ${lang}`);
 }
 
 /**
- * إخفاء جميع عناصر واجهة المستخدم
+ * تحديث واجهة المستخدم بناءً على اللغة
  */
-function hideAllUIElements() {
-    console.log('👻 إخفاء جميع عناصر واجهة المستخدم');
+function updateLanguageUI() {
+    // تحديث النصوص بناءً على اللغة
+    const elementsToUpdate = {
+        home: { en: 'Home', ar: 'الرئيسية' },
+        notifications: { en: 'Notifications', ar: 'الإشعارات' },
+        messages: { en: 'Messages', ar: 'الرسائل' },
+        settings: { en: 'Settings', ar: 'الإعدادات' },
+        aiChat: { en: 'UltraSpace AI', ar: 'الذكاء الاصطناعي' },
+        externalPage: { en: 'Page', ar: 'الصفحة' },
+        error: { en: 'Error', ar: 'خطأ' }
+    };
     
-    // إخفاء الشريط الجانبي
-    const sidebar = document.querySelector('.sidebar');
-    if (sidebar) sidebar.style.display = 'none';
-    
-    // إخفاء التنقل السفلي
-    if (elements.bottomNav) elements.bottomNav.style.display = 'none';
-    
-    // إخفاء الهيدرات
-    if (elements.homeHeader) elements.homeHeader.style.display = 'none';
-    if (elements.viewHeader) elements.viewHeader.style.display = 'none';
-    
-    // إخفاء جميع الواجهات
-    Object.values(views).forEach(view => {
-        if (view && view.id !== 'authView') {
-            view.style.display = 'none';
-        }
+    // تحديث عناوين الواجهات
+    Object.keys(elementsToUpdate).forEach(viewId => {
+        viewTitles[viewId] = elementsToUpdate[viewId][appState.language];
     });
+    
+    // تحديث شريط العنوان الحالي
+    updateViewHeader(appState.currentView);
+    
+    // تحديث عناصر أخرى حسب اللغة
+    const searchInput = document.querySelector('.search-bar-container input');
+    if (searchInput) {
+        searchInput.placeholder = appState.language === 'ar' ? 'بحث...' : 'Search...';
+    }
 }
 
+// ========== إعدادات الأحداث ==========
+
 /**
- * إعداد مستمعي الأحداث المحسّن
+ * إعداد مستمعي الأحداث
  */
 function setupEventListeners() {
-    console.log('🎯 إعداد مستمعي الأحداث...');
-    
     // أزرار التنقل
     elements.navButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const viewId = btn.dataset.view;
+        btn.addEventListener('click', function() {
+            const viewId = this.dataset.view;
             switchView(viewId);
         });
     });
@@ -1020,250 +1182,135 @@ function setupEventListeners() {
         elements.backBtn.addEventListener('click', goBack);
     }
     
-    // اختيار اللغة
-    if (elements.languageSelect) {
-        elements.languageSelect.addEventListener('change', (e) => {
-            appState.language = e.target.value;
-            applyLanguage();
-        });
-    }
-    
-    // صورة الملف الشخصي
-    if (elements.profileAvatar) {
-        elements.profileAvatar.addEventListener('click', openProfile);
-    }
-    
     // زر تسجيل الخروج
     if (elements.logoutBtn) {
-        elements.logoutBtn.addEventListener('click', () => {
-            logout();
-        });
+        elements.logoutBtn.addEventListener('click', logout);
     }
     
-    // زر الصفحة الرئيسية في واجهة الخطأ
+    // زر العودة للرئيسية من صفحة الخطأ
     if (elements.errorHomeBtn) {
-        elements.errorHomeBtn.addEventListener('click', () => {
+        elements.errorHomeBtn.addEventListener('click', function() {
             switchView('home');
         });
     }
     
     // عناصر الرسائل
-    elements.messageItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const userType = item.getAttribute('data-user');
-            
-            if (userType === 'ai') {
-                openAIChat();
-            } else if (userType === 'support') {
-                openHelpCenter();
-            }
-        });
-    });
-    
-    // شريط البحث
-    if (elements.searchInput) {
-        elements.searchInput.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
-        });
-        
-        elements.searchInput.addEventListener('blur', function() {
-            this.parentElement.classList.remove('focused');
-        });
-        
-        elements.searchInput.addEventListener('input', function() {
-            const hasValue = this.value.trim().length > 0;
-            this.parentElement.classList.toggle('has-value', hasValue);
+    if (elements.messageItems) {
+        elements.messageItems.forEach(item => {
+            item.addEventListener('click', function() {
+                console.log('💬 فتح محادثة:', this.dataset.user);
+                // يمكن إضافة منطق فتح المحادثة هنا
+            });
         });
     }
     
-    // صورة الملف الشخصي في الصفحة الرئيسية
-    if (elements.homeProfileAvatar) {
-        elements.homeProfileAvatar.addEventListener('click', openProfile);
+    // اختيار اللغة
+    if (elements.languageSelect) {
+        elements.languageSelect.value = appState.language;
+        elements.languageSelect.addEventListener('change', function() {
+            changeLanguage(this.value);
+        });
     }
     
-    // إعداد مستمعي الأحداث للـ iframe
-    setupIframeMessageListener();
-    setupIframeResizeHandler();
+    // فتح الملف الشخصي
+    if (elements.profileAvatar) {
+        elements.profileAvatar.addEventListener('click', openProfile);
+    }
 }
 
-// ========== تهيئة التطبيق ==========
+/**
+ * فتح الملف الشخصي
+ */
+function openProfile() {
+    console.log('👤 فتح الملف الشخصي');
+    // يمكن إضافة منطق فتح الملف الشخصي هنا
+    switchView('settings');
+}
+
+// ========== التهيئة ==========
 
 /**
  * تهيئة التطبيق
  */
 function initializeApp() {
-    console.log('🚀 تهيئة UltraSpace...');
+    console.log('🚀 بدء تهيئة تطبيق UltraSpace...');
     
-    // إخفاء شاشة التحميل الأولية
-    setTimeout(() => {
-        if (elements.loadingScreen) {
-            elements.loadingScreen.style.opacity = '0';
-            setTimeout(() => {
-                elements.loadingScreen.style.display = 'none';
-                elements.appContainer.style.display = 'block';
-            }, 500);
-        }
-    }, 1000);
+    // إضافة الأنماط الديناميكية
+    addDynamicStyles();
     
     // التحقق من المصادقة
     const isAuthenticated = checkBYPROAuthentication();
     
     if (!isAuthenticated) {
-        console.log('🔐 المستخدم غير مصادق، إنشاء واجهة المصادقة...');
-        hideAllUIElements();
+        console.log('🔐 المستخدم غير مصادق، عرض واجهة المصادقة...');
         createAuthView();
-        return;
+        switchView('auth');
+    } else {
+        console.log('✅ المستخدم مصادق، تحميل التطبيق...');
+        appState.isAuthenticated = true;
+        
+        // استخراج وحفظ رابط الصورة
+        extractAndSaveUserAvatar();
+        
+        // التحقق من معلمات URL أولاً
+        const hasUrlParams = handleUrlParameters();
+        
+        if (!hasUrlParams) {
+            // إذا لم تكن هناك معلمات URL، تحميل الواجهة الرئيسية
+            switchView('home');
+        }
+        
+        // عرض معلومات المستخدم
+        displayUserInfo();
+        
+        // إعداد مستمعي الأحداث
+        setupEventListeners();
+        
+        // إعداد مستمع رسائل الـ iframe
+        setupIframeMessageListener();
+        
+        // إعداد معالج تغيير حجم النافذة
+        setupIframeResizeHandler();
+        
+        // إعداد تغيير حجم الـ iframe
+        setupIframeResizing();
+        
+        // تحديث واجهة المستخدم بناءً على اللغة
+        updateLanguageUI();
+        
+        console.log('🎉 تم تهيئة التطبيق بنجاح');
     }
-    
-    console.log('✅ المستخدم مصادق، تحميل التطبيق...');
-    
-    // إذا كان المستخدم مصادقاً، تهيئة التطبيق
-    appState.isAuthenticated = true;
-    
-    // تطبيق اللغة
-    applyLanguage();
-    
-    // إعداد مستمعي الأحداث
-    setupEventListeners();
-    
-    // التحقق من معلمات URL
-    const hasUrlParams = handleUrlParameters();
-    
-    // إذا لم تكن هناك معلمات URL، تحميل الصفحة الرئيسية
-    if (!hasUrlParams) {
-        switchView('home');
-    }
-    
-    // عرض معلومات المستخدم
-    displayUserInfo();
-    
-    // إعداد أبعاد الـ iframes
-    setupIframeResizing();
-    
-    console.log('🎉 تم تهيئة UltraSpace بنجاح!');
 }
 
 // بدء التطبيق عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', initializeApp);
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 تم تحميل DOM، بدء التهيئة...');
+    initializeApp();
+});
 
-// إضافة أنماط CSS إضافية
-const additionalStyles = `
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes loadingShimmer {
-    0% { background-position: -200px 0; }
-    100% { background-position: 200px 0; }
-}
-
-.view.active {
-    animation: fadeIn 0.3s ease;
-}
-
-.search-bar.focused {
-    box-shadow: 0 0 0 2px rgba(58, 134, 255, 0.2);
-}
-
-.search-bar.has-value {
-    background: rgba(58, 134, 255, 0.05);
-}
-
-.bottom-nav {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.bottom-nav.visible {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.bottom-nav.hidden {
-    transform: translateY(100%);
-    opacity: 0;
-}
-
-.avatar-loading {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: loadingShimmer 1.5s infinite;
-}
-
-.user-info {
-    margin-top: 15px;
-}
-
-.user-info div:first-child {
-    font-weight: 700;
-    color: var(--text-color);
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-}
-
-.user-info div:not(:first-child) {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 3px;
-}
-
-.auth-container {
-    width: 100%;
-    height: 100vh;
-    background: var(--background-color);
-}
-
-.auth-header {
-    text-align: center;
-    padding: 20px;
-    background: var(--primary-color);
-    color: white;
-}
-
-.auth-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.auth-header p {
-    margin: 5px 0 0;
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.auth-iframe {
-    width: 100%;
-    height: calc(100vh - 80px);
-    border: none;
-}
-
-@media (max-width: 768px) {
-    .auth-header {
-        padding: 15px;
-    }
+// إعادة تهيئة بعض العناصر بعد تحميل الصفحة بالكامل
+window.addEventListener('load', function() {
+    console.log('🖼️ تم تحميل الصفحة بالكامل');
     
-    .auth-header h2 {
-        font-size: 1.3rem;
+    if (appState.isAuthenticated) {
+        // تحديث الهيدر الرئيسي
+        updateMainHeader();
+        
+        // تحديث شريط العنوان للواجهة الحالية
+        updateViewHeader(appState.currentView);
+        
+        // إخفاء شاشة التحميل إذا كانت موجودة
+        if (elements.loadingScreen) {
+            elements.loadingScreen.style.display = 'none';
+        }
+        
+        console.log('✨ تم تحسين الواجهة بعد التحميل الكامل');
     }
-    
-    .auth-iframe {
-        height: calc(100vh - 70px);
-    }
-}
-`;
+});
 
-// إضافة الأنماط الإضافية إلى الصفحة
-const styleSheet = document.createElement('style');
-styleSheet.textContent = additionalStyles;
-document.head.appendChild(styleSheet);
-[file content end]
+// معالجة الأخطاء غير المتوقعة
+window.addEventListener('error', function(e) {
+    console.error('💥 خطأ غير متوقع:', e.error);
+});
+
+console.log('📝 تم تحميل script التحسينات المتقدمة');
