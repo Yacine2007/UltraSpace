@@ -90,7 +90,7 @@ function addCustomStyles() {
             color: white;
         }
         
-        /* Enhanced search bar with avatar */
+        /* Enhanced search bar with profile */
         .search-bar-enhanced {
             display: flex;
             align-items: center;
@@ -176,7 +176,7 @@ function addCustomStyles() {
         }
         
         /* Custom popup modal */
-        .custom-popup {
+        .popup-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -192,7 +192,7 @@ function addCustomStyles() {
             transition: all 0.3s ease;
         }
         
-        .custom-popup.active {
+        .popup-modal.active {
             opacity: 1;
             visibility: visible;
         }
@@ -205,12 +205,12 @@ function addCustomStyles() {
             max-width: 400px;
             width: 90%;
             text-align: center;
-            transform: scale(0.9);
+            transform: translateY(-20px);
             transition: transform 0.3s ease;
         }
         
-        .custom-popup.active .popup-content {
-            transform: scale(1);
+        .popup-modal.active .popup-content {
+            transform: translateY(0);
         }
         
         .popup-title {
@@ -221,19 +221,19 @@ function addCustomStyles() {
         }
         
         .popup-message {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: var(--text-muted);
             line-height: 1.5;
         }
         
         .popup-buttons {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
         }
         
         .popup-btn {
-            padding: 10px 20px;
+            padding: 10px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -242,35 +242,19 @@ function addCustomStyles() {
             min-width: 100px;
         }
         
-        .popup-btn.confirm {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .popup-btn.confirm:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-        
         .popup-btn.cancel {
             background: var(--border-color);
             color: var(--text-color);
         }
         
-        .popup-btn.cancel:hover {
-            background: var(--text-muted);
+        .popup-btn.confirm {
+            background: var(--primary-color);
             color: white;
         }
         
-        /* Full screen iframe */
-        .iframe-fullscreen {
-            width: 100%;
-            height: 100vh;
-            border: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 9999;
+        .popup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
         /* Auth view styles */
@@ -287,12 +271,41 @@ function addCustomStyles() {
         .auth-container {
             width: 100%;
             height: 100vh;
+            position: relative;
         }
         
         .auth-iframe {
             width: 100%;
             height: 100vh;
             border: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Iframe responsive styles */
+        @media (max-width: 1024px) {
+            #externalPageView .iframe-container,
+            #aiChatView .iframe-container {
+                height: calc(100vh - 60px) !important;
+            }
+            
+            #externalPageView iframe,
+            #aiChatView iframe {
+                height: 100% !important;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            #externalPageView .iframe-container,
+            #aiChatView .iframe-container {
+                height: calc(100vh - 120px) !important;
+            }
+            
+            #externalPageView iframe,
+            #aiChatView iframe {
+                height: 100% !important;
+            }
         }
         
         /* View management */
@@ -302,24 +315,6 @@ function addCustomStyles() {
         
         .view:not(.active) {
             display: none !important;
-        }
-        
-        /* Mobile and desktop responsive */
-        @media (max-width: 1024px) {
-            .search-bar-enhanced {
-                padding: 0 10px;
-            }
-            
-            .user-profile-card {
-                padding: 20px 15px;
-            }
-        }
-        
-        @media (min-width: 1025px) {
-            .search-bar-enhanced {
-                max-width: 500px;
-                margin: 0 auto;
-            }
         }
     `;
     
@@ -398,6 +393,7 @@ function createAuthView() {
     `;
     
     document.querySelector('.main-content').innerHTML = authViewHTML;
+    views.auth = document.getElementById('authView');
     
     setupAuthIframeListener();
 }
@@ -431,7 +427,6 @@ function showAllUIElements() {
     
     updateHeaderVisibility();
     updateBottomNavVisibility();
-    updateViewHeader();
     
     if (views[appState.currentView]) {
         views[appState.currentView].style.display = 'block';
@@ -495,32 +490,25 @@ function getAuthenticatedUser() {
     return null;
 }
 
-// ========== Custom Popup System ==========
-
-function showCustomPopup(title, message, confirmCallback, cancelCallback) {
+function showLogoutPopup() {
     const popupHTML = `
-        <div class="custom-popup active" id="customPopup">
+        <div class="popup-modal active" id="logoutPopup">
             <div class="popup-content">
-                <div class="popup-title">${title}</div>
-                <div class="popup-message">${message}</div>
+                <div class="popup-title">Logout</div>
+                <div class="popup-message">Are you sure you want to logout?</div>
                 <div class="popup-buttons">
-                    <button class="popup-btn cancel" onclick="closeCustomPopup()">Cancel</button>
-                    <button class="popup-btn confirm" onclick="handleConfirm()">Confirm</button>
+                    <button class="popup-btn cancel" onclick="closePopup()">Cancel</button>
+                    <button class="popup-btn confirm" onclick="confirmLogout()">Logout</button>
                 </div>
             </div>
         </div>
     `;
     
     document.body.insertAdjacentHTML('beforeend', popupHTML);
-    
-    window.handleConfirm = function() {
-        if (confirmCallback) confirmCallback();
-        closeCustomPopup();
-    };
 }
 
-function closeCustomPopup() {
-    const popup = document.getElementById('customPopup');
+function closePopup() {
+    const popup = document.getElementById('logoutPopup');
     if (popup) {
         popup.classList.remove('active');
         setTimeout(() => {
@@ -529,18 +517,17 @@ function closeCustomPopup() {
     }
 }
 
-function logout() {
-    showCustomPopup(
-        'Logout Confirmation',
-        'Are you sure you want to logout?',
-        function() {
-            localStorage.removeItem('bypro_user');
-            localStorage.removeItem('ultraspace_user_avatar_url');
-            appState.isAuthenticated = false;
-            appState.userAvatarUrl = '';
-            window.location.reload();
-        }
-    );
+function confirmLogout() {
+    localStorage.removeItem('bypro_user');
+    localStorage.removeItem('ultraspace_user_avatar_url');
+    appState.isAuthenticated = false;
+    appState.userAvatarUrl = '';
+    
+    closePopup();
+    
+    setTimeout(() => {
+        window.location.reload();
+    }, 500);
 }
 
 // ========== View Management ==========
@@ -781,53 +768,25 @@ function updateEnhancedSettingsAvatar(user) {
     }
 }
 
-// ========== Iframe Management ==========
+// ========== External Pages Management ==========
 
 function setupIframeDimensions(iframe) {
     if (!iframe) return;
     
-    iframe.style.width = '100%';
-    iframe.style.height = '100vh';
+    const isMobile = appState.isMobile;
+    
+    if (isMobile) {
+        iframe.style.height = 'calc(100vh - 60px)';
+        iframe.style.minHeight = 'calc(100vh - 60px)';
+    } else {
+        iframe.style.height = 'calc(100vh - 120px)';
+        iframe.style.minHeight = '600px';
+    }
+    
+    iframe.style.maxHeight = 'none';
     iframe.style.border = 'none';
-    iframe.style.position = 'fixed';
-    iframe.style.top = '0';
-    iframe.style.left = '0';
-    iframe.style.zIndex = '9999';
-}
-
-function setupIframeMessageListener() {
-    window.addEventListener('message', function(event) {
-        const allowedOrigins = [
-            'https://yacine2007.github.io',
-            window.location.origin,
-            'https://ultraspace.wuaze.com'
-        ];
-        
-        let originAllowed = false;
-        for (const allowedOrigin of allowedOrigins) {
-            if (event.origin === allowedOrigin || event.origin.startsWith(allowedOrigin)) {
-                originAllowed = true;
-                break;
-            }
-        }
-        
-        if (!originAllowed) return;
-        
-        if (event.data && event.data.type === 'SHARE_LINK_REQUEST') {
-            const postId = event.data.postId;
-            const shareLink = generatePostShareLink(postId);
-            
-            event.source.postMessage({
-                type: 'SHARE_LINK_RESPONSE',
-                shareLink: shareLink
-            }, event.origin);
-        }
-    });
-}
-
-function generatePostShareLink(postId) {
-    const baseUrl = window.location.origin + window.location.pathname;
-    return `${baseUrl}?post=${postId}`;
+    iframe.style.borderRadius = '0';
+    iframe.style.width = '100%';
 }
 
 async function loadExternalPage(url, title = 'Page') {
@@ -835,7 +794,6 @@ async function loadExternalPage(url, title = 'Page') {
     
     try {
         if (elements.externalIframe) {
-            elements.externalIframe.className = 'iframe-fullscreen';
             elements.externalIframe.src = url;
             viewTitles.externalPage = title;
             
@@ -893,7 +851,7 @@ function setupEventListeners() {
     }
     
     if (elements.logoutBtn) {
-        elements.logoutBtn.addEventListener('click', logout);
+        elements.logoutBtn.addEventListener('click', showLogoutPopup);
     }
     
     if (elements.errorHomeBtn) {
@@ -912,6 +870,7 @@ function setupEventListeners() {
     
     setupMessageItemsClick();
     setupClickListeners();
+    setupIframeResizeHandler();
 }
 
 function setupMessageItemsClick() {
@@ -971,15 +930,23 @@ function setupClickListeners() {
     });
 }
 
-function hideLoadingScreen() {
-    if (elements.loadingScreen) {
-        elements.loadingScreen.style.opacity = '0';
-        setTimeout(() => {
-            if (elements.loadingScreen.parentNode) {
-                elements.loadingScreen.parentNode.removeChild(elements.loadingScreen);
+function setupIframeResizeHandler() {
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            appState.isMobile = window.innerWidth <= 1024;
+            
+            updateHeaderVisibility();
+            updateBottomNavVisibility();
+            updateViewHeader();
+            
+            const activeIframe = document.querySelector('.view.active .ai-iframe, .view.active .external-iframe');
+            if (activeIframe) {
+                setupIframeDimensions(activeIframe);
             }
-        }, 500);
-    }
+        }, 250);
+    });
 }
 
 // ========== App Initialization ==========
@@ -987,14 +954,13 @@ function hideLoadingScreen() {
 function initializeApp() {
     initializeDOMElements();
     addCustomStyles();
-    setupIframeMessageListener();
     
     const isAuthenticated = checkBYPROAuthentication();
     
     if (isAuthenticated) {
         startApp();
     } else {
-        createAuthView();
+        showAuthView();
     }
 }
 
@@ -1007,6 +973,22 @@ function startApp() {
     updateBottomNavVisibility();
     updateViewHeader();
     switchView('home');
+}
+
+function showAuthView() {
+    hideLoadingScreen();
+    createAuthView();
+}
+
+function hideLoadingScreen() {
+    if (elements.loadingScreen) {
+        elements.loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+            if (elements.loadingScreen.parentNode) {
+                elements.loadingScreen.parentNode.removeChild(elements.loadingScreen);
+            }
+        }, 500);
+    }
 }
 
 // ========== Start App ==========
@@ -1023,6 +1005,16 @@ window.openProfile = openProfile;
 window.openYacine = openYacine;
 window.openHelpCenter = openHelpCenter;
 window.loadExternalPage = loadExternalPage;
-window.logout = logout;
-window.closeCustomPopup = closeCustomPopup;
-window.switchView = switchView;
+window.closePopup = closePopup;
+window.confirmLogout = confirmLogout;
+window.showLogoutPopup = showLogoutPopup;
+
+window.UltraSpace = {
+    appState,
+    switchView,
+    loadExternalPage,
+    openAIChat,
+    openProfile,
+    logout: showLogoutPopup,
+    getAuthenticatedUser
+};
