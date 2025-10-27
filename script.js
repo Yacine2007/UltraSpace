@@ -182,12 +182,6 @@ function createMissingViews() {
         <!-- AI Chat View -->
         <div class="view" id="aiChatView">
             <div class="view-content">
-                <div class="header" id="viewHeader">
-                    <button class="back-btn-circle" id="backBtn">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <div class="header-title" id="viewTitle">UltraSpace AI</div>
-                </div>
                 <div class="iframe-container">
                     <iframe src="Ai/AI.html" class="ai-iframe" id="aiIframe"></iframe>
                 </div>
@@ -197,12 +191,6 @@ function createMissingViews() {
         <!-- External Page View -->
         <div class="view" id="externalPageView">
             <div class="view-content">
-                <div class="header" id="viewHeader">
-                    <button class="back-btn-circle" id="backBtn">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <div class="header-title" id="viewTitle">External Page</div>
-                </div>
                 <div class="iframe-container">
                     <iframe src="" class="external-iframe" id="externalIframe"></iframe>
                 </div>
@@ -429,18 +417,48 @@ function addCustomStyles() {
             border: none;
         }
         
-        /* Mobile responsive */
+        /* Iframe full height styles */
+        .iframe-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .ai-iframe,
+        .external-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+        
+        /* Mobile responsive for iframes - full screen without headers */
         @media (max-width: 1024px) {
-            #externalPageView iframe,
-            #aiChatView iframe {
-                height: calc(100vh - 60px) !important;
+            .iframe-container {
+                height: 100vh !important;
+            }
+            
+            .ai-iframe,
+            .external-iframe {
+                height: 100% !important;
+            }
+            
+            #aiChatView .view-content,
+            #externalPageView .view-content {
+                padding: 0 !important;
+                margin: 0 !important;
             }
         }
         
+        /* Desktop responsive for iframes */
         @media (min-width: 1025px) {
-            #externalPageView iframe,
-            #aiChatView iframe {
-                height: calc(100vh - 120px) !important;
+            .iframe-container {
+                height: 100vh !important;
+            }
+            
+            .ai-iframe,
+            .external-iframe {
+                height: 100% !important;
             }
         }
 
@@ -491,6 +509,17 @@ function addCustomStyles() {
             outline: none;
             width: 100%;
             color: var(--text-color);
+        }
+
+        /* View content adjustments */
+        .view-content {
+            width: 100%;
+            height: 100%;
+        }
+
+        #aiChatView .view-content,
+        #externalPageView .view-content {
+            height: 100vh;
         }
     `;
     
@@ -648,6 +677,13 @@ function switchView(viewId) {
     updateHeaderVisibility();
     updateBottomNavVisibility();
     updateViewTitle(viewId);
+    
+    // Setup iframe dimensions for external pages
+    if (viewId === 'aiChat' || viewId === 'externalPage') {
+        setTimeout(() => {
+            setupIframeDimensions();
+        }, 100);
+    }
 }
 
 function updateHeaderVisibility() {
@@ -657,21 +693,33 @@ function updateHeaderVisibility() {
     const viewHeaders = document.querySelectorAll('#viewHeader');
     
     if (appState.currentView === 'home') {
-        homeHeaders.forEach(header => header.style.display = 'flex');
+        homeHeaders.forEach(header => {
+            header.style.display = 'flex';
+            updateHomeHeader(header);
+        });
         viewHeaders.forEach(header => header.style.display = 'none');
-        updateHomeHeader();
+    } else if (appState.currentView === 'aiChat' || appState.currentView === 'externalPage') {
+        // Hide all headers for iframe views on mobile
+        if (appState.isMobile) {
+            homeHeaders.forEach(header => header.style.display = 'none');
+            viewHeaders.forEach(header => header.style.display = 'none');
+        } else {
+            homeHeaders.forEach(header => header.style.display = 'none');
+            viewHeaders.forEach(header => header.style.display = 'flex');
+        }
     } else {
         homeHeaders.forEach(header => header.style.display = 'none');
-        viewHeaders.forEach(header => header.style.display = 'flex');
-        updateViewHeader();
+        viewHeaders.forEach(header => {
+            header.style.display = 'flex';
+            updateViewHeader(header);
+        });
     }
 }
 
-function updateHomeHeader() {
-    const homeHeader = document.querySelector('#homeHeader');
-    if (!homeHeader) return;
+function updateHomeHeader(header) {
+    if (!header) return;
     
-    let searchBar = homeHeader.querySelector('.search-bar');
+    let searchBar = header.querySelector('.search-bar');
     if (searchBar && !searchBar.classList.contains('enhanced')) {
         const user = getAuthenticatedUser();
         const avatarUrl = appState.userAvatarUrl || (user ? user.image : '');
@@ -690,15 +738,15 @@ function updateHomeHeader() {
         `;
         
         searchBar.outerHTML = enhancedHTML;
+        searchBar.classList.add('enhanced');
     }
 }
 
-function updateViewHeader() {
-    const viewHeader = document.querySelector('#viewHeader');
-    if (!viewHeader) return;
+function updateViewHeader(header) {
+    if (!header) return;
     
     // Update back buttons
-    const backBtns = document.querySelectorAll('#backBtn');
+    const backBtns = header.querySelectorAll('#backBtn');
     backBtns.forEach(btn => {
         if (!btn.classList.contains('enhanced')) {
             btn.classList.add('back-btn-circle');
@@ -738,6 +786,31 @@ function goBack() {
     } else {
         switchView('home');
     }
+}
+
+// ========== Iframe Dimensions Management ==========
+
+function setupIframeDimensions() {
+    const iframes = document.querySelectorAll('.ai-iframe, .external-iframe');
+    
+    iframes.forEach(iframe => {
+        if (appState.isMobile) {
+            // Mobile: Full screen from top to bottom
+            iframe.style.height = '100vh';
+            iframe.style.width = '100%';
+            iframe.style.position = 'fixed';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            iframe.style.zIndex = '9999';
+        } else {
+            // Desktop: Full height within container
+            iframe.style.height = '100vh';
+            iframe.style.width = '100%';
+        }
+        
+        iframe.style.border = 'none';
+        iframe.style.background = 'white';
+    });
 }
 
 // ========== User Profile Management ==========
@@ -927,6 +1000,11 @@ function setupEventListeners() {
     window.addEventListener('resize', () => {
         appState.isMobile = window.innerWidth <= 1024;
         updateBottomNavVisibility();
+        
+        // Update iframe dimensions on resize
+        if (appState.currentView === 'aiChat' || appState.currentView === 'externalPage') {
+            setupIframeDimensions();
+        }
     });
 }
 
