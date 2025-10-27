@@ -182,6 +182,12 @@ function createMissingViews() {
         <!-- AI Chat View -->
         <div class="view" id="aiChatView">
             <div class="view-content">
+                <div class="header" id="viewHeader">
+                    <button class="back-btn-circle" id="backBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="header-title" id="viewTitle">UltraSpace AI</div>
+                </div>
                 <div class="iframe-container">
                     <iframe src="Ai/AI.html" class="ai-iframe" id="aiIframe"></iframe>
                 </div>
@@ -191,6 +197,12 @@ function createMissingViews() {
         <!-- External Page View -->
         <div class="view" id="externalPageView">
             <div class="view-content">
+                <div class="header" id="viewHeader">
+                    <button class="back-btn-circle" id="backBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="header-title" id="viewTitle">External Page</div>
+                </div>
                 <div class="iframe-container">
                     <iframe src="" class="external-iframe" id="externalIframe"></iframe>
                 </div>
@@ -432,7 +444,7 @@ function addCustomStyles() {
             background: white;
         }
         
-        /* Mobile responsive for iframes - full screen without headers */
+        /* Mobile responsive for iframes */
         @media (max-width: 1024px) {
             .iframe-container {
                 height: 100vh !important;
@@ -443,10 +455,21 @@ function addCustomStyles() {
                 height: 100% !important;
             }
             
-            #aiChatView .view-content,
-            #externalPageView .view-content {
-                padding: 0 !important;
-                margin: 0 !important;
+            #aiChatView .header,
+            #externalPageView .header {
+                display: flex !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                z-index: 1000;
+                background: var(--background-color);
+            }
+            
+            #aiChatView .iframe-container,
+            #externalPageView .iframe-container {
+                margin-top: 60px;
+                height: calc(100vh - 60px) !important;
             }
         }
         
@@ -459,6 +482,16 @@ function addCustomStyles() {
             .ai-iframe,
             .external-iframe {
                 height: 100% !important;
+            }
+            
+            #aiChatView .header,
+            #externalPageView .header {
+                display: flex !important;
+            }
+            
+            #aiChatView .iframe-container,
+            #externalPageView .iframe-container {
+                height: calc(100vh - 60px) !important;
             }
         }
 
@@ -484,11 +517,15 @@ function addCustomStyles() {
             background: var(--background-color);
             border-bottom: 1px solid var(--border-color);
             gap: 15px;
+            position: relative;
+            z-index: 1000;
         }
 
         .header-title {
             font-weight: 600;
             font-size: 1.2rem;
+            flex: 1;
+            text-align: center;
         }
 
         /* Search bar */
@@ -520,6 +557,24 @@ function addCustomStyles() {
         #aiChatView .view-content,
         #externalPageView .view-content {
             height: 100vh;
+        }
+
+        /* Ensure headers are visible */
+        #homeHeader,
+        #viewHeader {
+            display: flex !important;
+        }
+
+        /* Mobile header adjustments */
+        @media (max-width: 1024px) {
+            .header {
+                padding: 12px 15px;
+            }
+            
+            .back-btn-circle {
+                width: 36px;
+                height: 36px;
+            }
         }
     `;
     
@@ -689,26 +744,28 @@ function switchView(viewId) {
 function updateHeaderVisibility() {
     if (!appState.isAuthenticated) return;
     
+    // Get all headers
     const homeHeaders = document.querySelectorAll('#homeHeader');
     const viewHeaders = document.querySelectorAll('#viewHeader');
     
+    // Reset all headers first
+    homeHeaders.forEach(header => header.style.display = 'none');
+    viewHeaders.forEach(header => header.style.display = 'none');
+    
     if (appState.currentView === 'home') {
+        // Show home header with search and profile
         homeHeaders.forEach(header => {
             header.style.display = 'flex';
             updateHomeHeader(header);
         });
-        viewHeaders.forEach(header => header.style.display = 'none');
     } else if (appState.currentView === 'aiChat' || appState.currentView === 'externalPage') {
-        // Hide all headers for iframe views on mobile
-        if (appState.isMobile) {
-            homeHeaders.forEach(header => header.style.display = 'none');
-            viewHeaders.forEach(header => header.style.display = 'none');
-        } else {
-            homeHeaders.forEach(header => header.style.display = 'none');
-            viewHeaders.forEach(header => header.style.display = 'flex');
-        }
+        // Show view header for iframe pages
+        viewHeaders.forEach(header => {
+            header.style.display = 'flex';
+            updateViewHeader(header);
+        });
     } else {
-        homeHeaders.forEach(header => header.style.display = 'none');
+        // Show view header for other pages
         viewHeaders.forEach(header => {
             header.style.display = 'flex';
             updateViewHeader(header);
@@ -738,7 +795,6 @@ function updateHomeHeader(header) {
         `;
         
         searchBar.outerHTML = enhancedHTML;
-        searchBar.classList.add('enhanced');
     }
 }
 
@@ -746,10 +802,9 @@ function updateViewHeader(header) {
     if (!header) return;
     
     // Update back buttons
-    const backBtns = header.querySelectorAll('#backBtn');
+    const backBtns = header.querySelectorAll('.back-btn-circle');
     backBtns.forEach(btn => {
         if (!btn.classList.contains('enhanced')) {
-            btn.classList.add('back-btn-circle');
             btn.classList.add('enhanced');
         }
     });
@@ -759,8 +814,8 @@ function updateViewHeader(header) {
 }
 
 function updateViewTitle(viewId) {
-    const viewTitles = document.querySelectorAll('#viewTitle');
-    viewTitles.forEach(title => {
+    const viewTitleElements = document.querySelectorAll('#viewTitle');
+    viewTitleElements.forEach(title => {
         title.textContent = viewTitles[viewId] || 'View';
     });
 }
@@ -795,16 +850,12 @@ function setupIframeDimensions() {
     
     iframes.forEach(iframe => {
         if (appState.isMobile) {
-            // Mobile: Full screen from top to bottom
-            iframe.style.height = '100vh';
+            // Mobile: Full screen with header
+            iframe.style.height = 'calc(100vh - 60px)';
             iframe.style.width = '100%';
-            iframe.style.position = 'fixed';
-            iframe.style.top = '0';
-            iframe.style.left = '0';
-            iframe.style.zIndex = '9999';
         } else {
             // Desktop: Full height within container
-            iframe.style.height = '100vh';
+            iframe.style.height = 'calc(100vh - 60px)';
             iframe.style.width = '100%';
         }
         
