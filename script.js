@@ -30,27 +30,13 @@ const viewTitles = {
 function initializeDOMElements() {
     console.log('🔍 Initializing DOM elements...');
     
-    // Basic elements
+    // Basic elements that should exist
     elements = {
         loadingScreen: document.getElementById('loadingScreen'),
-        appContainer: document.getElementById('appContainer'),
-        navButtons: document.querySelectorAll('.nav-btn'),
-        homeHeader: document.getElementById('homeHeader'),
-        viewHeader: document.getElementById('viewHeader'),
-        backBtn: document.getElementById('backBtn'),
-        profileAvatar: document.getElementById('profileAvatar'),
-        languageSelect: document.getElementById('languageSelect'),
-        logoutBtn: document.getElementById('settingsLogoutBtn'),
-        errorHomeBtn: document.getElementById('errorHomeBtn'),
-        messageItems: document.querySelectorAll('.message-item'),
-        externalIframe: document.getElementById('externalIframe'),
-        aiIframe: document.getElementById('aiIframe'),
-        bottomNav: document.getElementById('bottomNav'),
-        viewTitle: document.getElementById('viewTitle'),
-        searchInput: document.querySelector('.search-bar input')
+        appContainer: document.getElementById('appContainer')
     };
 
-    // Views
+    // Try to find views
     views = {
         home: document.getElementById('homeView'),
         notifications: document.getElementById('notificationsView'),
@@ -61,22 +47,212 @@ function initializeDOMElements() {
         error: document.getElementById('errorView')
     };
 
-    // Debug: Log found elements
-    console.log('📋 Found elements:', {
-        loadingScreen: !!elements.loadingScreen,
-        appContainer: !!elements.appContainer,
-        navButtons: elements.navButtons?.length || 0,
-        homeHeader: !!elements.homeHeader,
-        viewHeader: !!elements.viewHeader,
-        homeView: !!views.home,
-        settingsView: !!views.settings
-    });
+    // If main views don't exist, create them
+    if (!views.home) {
+        createMissingViews();
+    }
+
+    // Find other elements after views are created
+    elements.navButtons = document.querySelectorAll('.nav-btn');
+    elements.homeHeader = document.getElementById('homeHeader');
+    elements.viewHeader = document.getElementById('viewHeader');
+    elements.backBtn = document.getElementById('backBtn');
+    elements.profileAvatar = document.getElementById('profileAvatar');
+    elements.languageSelect = document.getElementById('languageSelect');
+    elements.logoutBtn = document.getElementById('settingsLogoutBtn');
+    elements.errorHomeBtn = document.getElementById('errorHomeBtn');
+    elements.messageItems = document.querySelectorAll('.message-item');
+    elements.externalIframe = document.getElementById('externalIframe');
+    elements.aiIframe = document.getElementById('aiIframe');
+    elements.bottomNav = document.getElementById('bottomNav');
+    elements.viewTitle = document.getElementById('viewTitle');
+    elements.searchInput = document.querySelector('.search-bar input');
+
+    console.log('📋 DOM elements initialized');
+}
+
+function createMissingViews() {
+    console.log('🛠️ Creating missing views...');
+    
+    const mainContent = document.querySelector('.main-content');
+    if (!mainContent) {
+        console.error('❌ main-content not found');
+        return;
+    }
+
+    // Create basic view structure if it doesn't exist
+    const viewStructure = `
+        <!-- Home View -->
+        <div class="view active" id="homeView">
+            <div class="view-content">
+                <div class="header" id="homeHeader">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search...">
+                    </div>
+                </div>
+                <div class="stories-section">
+                    <div class="story-item">
+                        <div class="story-avatar"></div>
+                        <div class="story-name">Yacine</div>
+                    </div>
+                </div>
+                <div class="pages-section">
+                    <div class="page-item" data-page-url="Yacine/index.html">
+                        <div class="page-avatar"></div>
+                        <div class="page-name">Yacine</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications View -->
+        <div class="view" id="notificationsView">
+            <div class="view-content">
+                <div class="header" id="viewHeader">
+                    <button class="back-btn-circle" id="backBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="header-title" id="viewTitle">Notifications</div>
+                </div>
+                <div class="notifications-list">
+                    <div class="notification-item">No notifications</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages View -->
+        <div class="view" id="messagesView">
+            <div class="view-content">
+                <div class="header" id="viewHeader">
+                    <button class="back-btn-circle" id="backBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="header-title" id="viewTitle">Messages</div>
+                </div>
+                <div class="messages-list">
+                    <div class="message-item" data-user="ai">
+                        <div class="message-avatar"></div>
+                        <div class="message-info">
+                            <div class="message-name">UltraSpace AI</div>
+                            <div class="message-preview">AI Assistant</div>
+                        </div>
+                    </div>
+                    <div class="message-item" data-user="support">
+                        <div class="message-avatar"></div>
+                        <div class="message-info">
+                            <div class="message-name">Support</div>
+                            <div class="message-preview">Get help</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div class="view" id="settingsView">
+            <div class="view-content">
+                <div class="header" id="viewHeader">
+                    <button class="back-btn-circle" id="backBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="header-title" id="viewTitle">Settings</div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-item" data-page="Profile/Profile.html">
+                        <i class="fas fa-user"></i>
+                        <span>Edit Profile</span>
+                    </div>
+                    <div class="settings-item" data-page="Ai/AI.html">
+                        <i class="fas fa-robot"></i>
+                        <span>UltraSpace AI</span>
+                    </div>
+                    <div class="settings-item" data-page="HCA.html">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Help Center</span>
+                    </div>
+                    <div class="settings-item" id="settingsLogoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Chat View -->
+        <div class="view" id="aiChatView">
+            <div class="view-content">
+                <div class="header" id="viewHeader">
+                    <button class="back-btn-circle" id="backBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="header-title" id="viewTitle">UltraSpace AI</div>
+                </div>
+                <div class="iframe-container">
+                    <iframe src="Ai/AI.html" class="ai-iframe" id="aiIframe"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- External Page View -->
+        <div class="view" id="externalPageView">
+            <div class="view-content">
+                <div class="header" id="viewHeader">
+                    <button class="back-btn-circle" id="backBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="header-title" id="viewTitle">External Page</div>
+                </div>
+                <div class="iframe-container">
+                    <iframe src="" class="external-iframe" id="externalIframe"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error View -->
+        <div class="view" id="errorView">
+            <div class="view-content">
+                <div class="error-container">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h2>Something went wrong</h2>
+                    <p>Please try again later</p>
+                    <button class="error-home-btn" id="errorHomeBtn">Go Home</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    mainContent.innerHTML = viewStructure;
+
+    // Re-initialize views after creating them
+    views = {
+        home: document.getElementById('homeView'),
+        notifications: document.getElementById('notificationsView'),
+        messages: document.getElementById('messagesView'),
+        settings: document.getElementById('settingsView'),
+        aiChat: document.getElementById('aiChatView'),
+        externalPage: document.getElementById('externalPageView'),
+        error: document.getElementById('errorView')
+    };
+
+    console.log('✅ Missing views created');
 }
 
 // ========== Add Custom Styles ==========
 
 function addCustomStyles() {
     const styles = `
+        /* Basic view management */
+        .view {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .view.active {
+            display: block;
+        }
+
         /* Enhanced back button */
         .back-btn-circle {
             width: 40px;
@@ -89,14 +265,11 @@ function addCustomStyles() {
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .back-btn-circle:hover {
             background: var(--primary-color);
             border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3);
         }
         
         .back-btn-circle:hover i {
@@ -127,12 +300,7 @@ function addCustomStyles() {
             cursor: pointer;
         }
         
-        .avatar-mini:hover {
-            border-color: var(--primary-color);
-            transform: scale(1.05);
-        }
-        
-        /* User profile card in settings */
+        /* User profile card */
         .user-profile-card {
             text-align: center;
             padding: 25px 20px;
@@ -148,15 +316,12 @@ function addCustomStyles() {
             margin: 0 auto 15px;
             overflow: hidden;
             background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            position: relative;
         }
         
         .user-avatar {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
         }
         
         .user-name {
@@ -164,7 +329,6 @@ function addCustomStyles() {
             color: var(--text-color);
             font-size: 1.3rem;
             margin-bottom: 5px;
-            letter-spacing: 0.5px;
         }
         
         .user-id {
@@ -185,7 +349,7 @@ function addCustomStyles() {
             padding: 0 10px;
         }
         
-        /* Custom popup modal */
+        /* Popup modal */
         .popup-modal {
             position: fixed;
             top: 0;
@@ -197,14 +361,6 @@ function addCustomStyles() {
             align-items: center;
             justify-content: center;
             z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .popup-modal.active {
-            opacity: 1;
-            visibility: visible;
         }
         
         .popup-content {
@@ -215,12 +371,6 @@ function addCustomStyles() {
             max-width: 400px;
             width: 90%;
             text-align: center;
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
-        }
-        
-        .popup-modal.active .popup-content {
-            transform: translateY(0);
         }
         
         .popup-title {
@@ -262,7 +412,7 @@ function addCustomStyles() {
             color: white;
         }
         
-        /* Auth view styles */
+        /* Auth view */
         #authView {
             position: fixed;
             top: 0;
@@ -271,31 +421,12 @@ function addCustomStyles() {
             height: 100vh;
             z-index: 10000;
             background: var(--background-color);
-            display: none;
-        }
-        
-        #authView.active {
-            display: block;
-        }
-        
-        .auth-container {
-            width: 100%;
-            height: 100vh;
         }
         
         .auth-iframe {
             width: 100%;
             height: 100vh;
             border: none;
-        }
-        
-        /* View management */
-        .view {
-            display: none;
-        }
-        
-        .view.active {
-            display: block;
         }
         
         /* Mobile responsive */
@@ -312,18 +443,65 @@ function addCustomStyles() {
                 height: calc(100vh - 120px) !important;
             }
         }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--background-color);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        /* Header styles */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: var(--background-color);
+            border-bottom: 1px solid var(--border-color);
+            gap: 15px;
+        }
+
+        .header-title {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        /* Search bar */
+        .search-bar {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--input-background);
+            border-radius: 20px;
+            padding: 8px 15px;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: none;
+            outline: none;
+            width: 100%;
+            color: var(--text-color);
+        }
     `;
     
     const styleSheet = document.createElement('style');
     styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
-    console.log('✅ Custom styles added');
 }
 
 // ========== Authentication System ==========
 
 function checkBYPROAuthentication() {
-    console.log('🔐 Checking authentication...');
     const userData = localStorage.getItem('bypro_user');
     
     if (userData) {
@@ -338,11 +516,10 @@ function checkBYPROAuthentication() {
                     localStorage.setItem('ultraspace_user_avatar_url', user.image);
                 }
                 
-                console.log('✅ User authenticated');
                 return true;
             }
         } catch (error) {
-            console.error('❌ Error parsing user data');
+            // Error parsing user data
         }
     }
     
@@ -352,13 +529,10 @@ function checkBYPROAuthentication() {
     appState.isAuthenticated = false;
     appState.userAvatarUrl = '';
     
-    console.log('❌ User not authenticated');
     return false;
 }
 
 function createAuthView() {
-    console.log('🔐 Creating auth view...');
-    
     // Hide main app
     if (elements.appContainer) {
         elements.appContainer.style.display = 'none';
@@ -383,15 +557,7 @@ function createAuthView() {
         </div>
     `;
     
-    // Add to main content or body
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-        mainContent.innerHTML = authHTML;
-    } else {
-        document.body.insertAdjacentHTML('beforeend', authHTML);
-    }
-    
-    views.auth = document.getElementById('authView');
+    document.body.insertAdjacentHTML('beforeend', authHTML);
     
     // Setup auth message listener
     setupAuthIframeListener();
@@ -399,19 +565,10 @@ function createAuthView() {
 
 function setupAuthIframeListener() {
     function handleAuthMessage(event) {
-        const allowedOrigins = [
-            'https://yacine2007.github.io',
-            window.location.origin,
-            'https://ultraspace.wuaze.com'
-        ];
-        
-        if (!allowedOrigins.some(origin => event.origin.startsWith(origin))) {
-            return;
-        }
-        
-        if (event.data && event.data.type === 'USER_AUTHENTICATED') {
-            console.log('✅ User authenticated via message');
-            handleSuccessfulAuth();
+        if (event.origin === 'https://yacine2007.github.io') {
+            if (event.data && event.data.type === 'USER_AUTHENTICATED') {
+                handleSuccessfulAuth();
+            }
         }
     }
     
@@ -432,7 +589,6 @@ function setupAuthIframeListener() {
 }
 
 function handleSuccessfulAuth() {
-    console.log('✅ Authentication successful, reloading...');
     appState.isAuthenticated = true;
     
     // Extract and save user avatar
@@ -440,6 +596,12 @@ function handleSuccessfulAuth() {
     if (user && user.image) {
         appState.userAvatarUrl = user.image;
         localStorage.setItem('ultraspace_user_avatar_url', user.image);
+    }
+    
+    // Remove auth view
+    const authView = document.getElementById('authView');
+    if (authView) {
+        authView.remove();
     }
     
     // Reload page to initialize app properly
@@ -459,12 +621,9 @@ function getAuthenticatedUser() {
 // ========== View Management ==========
 
 function switchView(viewId) {
-    console.log(`🔄 Switching to view: ${viewId}`);
-    
     if (appState.currentView === viewId) return;
     
     if (!appState.isAuthenticated && viewId !== 'auth') {
-        console.log('🚫 User not authenticated, cannot switch views');
         return;
     }
     
@@ -483,59 +642,36 @@ function switchView(viewId) {
         if (lastView !== viewId) {
             appState.viewHistory.push(viewId);
         }
-    } else {
-        console.error(`❌ View ${viewId} not found`);
-        return;
     }
-    
-    // Update navigation buttons
-    updateNavButtons(viewId);
     
     // Update UI
     updateHeaderVisibility();
     updateBottomNavVisibility();
     updateViewTitle(viewId);
-    
-    console.log(`✅ Switched to ${viewId}`);
-}
-
-function updateNavButtons(activeView) {
-    if (elements.navButtons) {
-        elements.navButtons.forEach(btn => {
-            const viewId = btn.dataset.view;
-            if (viewId) {
-                btn.classList.toggle('active', viewId === activeView);
-            }
-        });
-    }
 }
 
 function updateHeaderVisibility() {
-    if (!appState.isAuthenticated) {
-        if (elements.homeHeader) elements.homeHeader.style.display = 'none';
-        if (elements.viewHeader) elements.viewHeader.style.display = 'none';
-        return;
-    }
+    if (!appState.isAuthenticated) return;
+    
+    const homeHeaders = document.querySelectorAll('#homeHeader');
+    const viewHeaders = document.querySelectorAll('#viewHeader');
     
     if (appState.currentView === 'home') {
-        if (elements.homeHeader) {
-            elements.homeHeader.style.display = 'flex';
-            updateHomeHeader();
-        }
-        if (elements.viewHeader) elements.viewHeader.style.display = 'none';
+        homeHeaders.forEach(header => header.style.display = 'flex');
+        viewHeaders.forEach(header => header.style.display = 'none');
+        updateHomeHeader();
     } else {
-        if (elements.homeHeader) elements.homeHeader.style.display = 'none';
-        if (elements.viewHeader) {
-            elements.viewHeader.style.display = 'flex';
-            updateViewHeader();
-        }
+        homeHeaders.forEach(header => header.style.display = 'none');
+        viewHeaders.forEach(header => header.style.display = 'flex');
+        updateViewHeader();
     }
 }
 
 function updateHomeHeader() {
-    if (!elements.homeHeader) return;
+    const homeHeader = document.querySelector('#homeHeader');
+    if (!homeHeader) return;
     
-    let searchBar = elements.homeHeader.querySelector('.search-bar');
+    let searchBar = homeHeader.querySelector('.search-bar');
     if (searchBar && !searchBar.classList.contains('enhanced')) {
         const user = getAuthenticatedUser();
         const avatarUrl = appState.userAvatarUrl || (user ? user.image : '');
@@ -554,44 +690,43 @@ function updateHomeHeader() {
         `;
         
         searchBar.outerHTML = enhancedHTML;
-        searchBar.classList.add('enhanced');
     }
 }
 
 function updateViewHeader() {
-    if (!elements.viewHeader) return;
+    const viewHeader = document.querySelector('#viewHeader');
+    if (!viewHeader) return;
     
-    // Update back button
-    if (elements.backBtn && !elements.backBtn.classList.contains('enhanced')) {
-        elements.backBtn.classList.add('back-btn-circle');
-        elements.backBtn.classList.add('enhanced');
-        
-        if (!elements.backBtn.querySelector('i')) {
-            elements.backBtn.innerHTML = '<i class="fas fa-chevron-left" style="color: var(--text-color);"></i>';
+    // Update back buttons
+    const backBtns = document.querySelectorAll('#backBtn');
+    backBtns.forEach(btn => {
+        if (!btn.classList.contains('enhanced')) {
+            btn.classList.add('back-btn-circle');
+            btn.classList.add('enhanced');
         }
-    }
+    });
     
     // Update title
     updateViewTitle(appState.currentView);
 }
 
 function updateViewTitle(viewId) {
-    if (elements.viewTitle) {
-        elements.viewTitle.textContent = viewTitles[viewId] || 'View';
-    }
+    const viewTitles = document.querySelectorAll('#viewTitle');
+    viewTitles.forEach(title => {
+        title.textContent = viewTitles[viewId] || 'View';
+    });
 }
 
 function updateBottomNavVisibility() {
-    if (!appState.isAuthenticated) {
-        if (elements.bottomNav) elements.bottomNav.style.display = 'none';
-        return;
-    }
+    if (!appState.isAuthenticated) return;
     
+    const bottomNavs = document.querySelectorAll('.bottom-nav');
     const mobileViews = ['home', 'notifications', 'messages', 'settings'];
+    
     if (appState.isMobile && mobileViews.includes(appState.currentView)) {
-        if (elements.bottomNav) elements.bottomNav.style.display = 'flex';
+        bottomNavs.forEach(nav => nav.style.display = 'flex');
     } else {
-        if (elements.bottomNav) elements.bottomNav.style.display = 'none';
+        bottomNavs.forEach(nav => nav.style.display = 'none');
     }
 }
 
@@ -611,19 +746,7 @@ function displayUserInfo() {
     const user = getAuthenticatedUser();
     if (!user) return;
     
-    updateProfileAvatar(user);
     updateSettingsProfile(user);
-}
-
-function updateProfileAvatar(user) {
-    if (elements.profileAvatar) {
-        const avatarUrl = appState.userAvatarUrl || user.image;
-        elements.profileAvatar.src = avatarUrl || getDefaultAvatarUrl(user);
-        elements.profileAvatar.alt = user.name || `User ${user.id}`;
-        elements.profileAvatar.onerror = function() {
-            this.src = getDefaultAvatarUrl(user);
-        };
-    }
 }
 
 function updateSettingsProfile(user) {
@@ -660,7 +783,7 @@ function getDefaultAvatarUrl(user) {
 
 function showLogoutPopup() {
     const popupHTML = `
-        <div class="popup-modal active" id="logoutPopup">
+        <div class="popup-modal" id="logoutPopup">
             <div class="popup-content">
                 <div class="popup-title">Logout</div>
                 <div class="popup-message">Are you sure you want to logout?</div>
@@ -673,13 +796,18 @@ function showLogoutPopup() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', popupHTML);
+    
+    // Show popup with animation
+    setTimeout(() => {
+        const popup = document.getElementById('logoutPopup');
+        if (popup) popup.style.display = 'flex';
+    }, 10);
 }
 
 function closePopup() {
     const popup = document.getElementById('logoutPopup');
     if (popup) {
-        popup.classList.remove('active');
-        setTimeout(() => popup.remove(), 300);
+        popup.remove();
     }
 }
 
@@ -727,55 +855,44 @@ function openHelpCenter() {
 // ========== Event Listeners ==========
 
 function setupEventListeners() {
-    console.log('🎯 Setting up event listeners...');
-    
     // Navigation buttons
-    if (elements.navButtons) {
-        elements.navButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const viewId = btn.dataset.view;
-                if (viewId) switchView(viewId);
-            });
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const viewId = btn.dataset.view;
+            if (viewId) switchView(viewId);
         });
-    }
+    });
     
-    // Back button
-    if (elements.backBtn) {
-        elements.backBtn.addEventListener('click', goBack);
-    }
+    // Back buttons
+    const backBtns = document.querySelectorAll('#backBtn');
+    backBtns.forEach(btn => {
+        btn.addEventListener('click', goBack);
+    });
     
     // Logout button
-    if (elements.logoutBtn) {
-        elements.logoutBtn.addEventListener('click', showLogoutPopup);
-    }
+    const logoutBtns = document.querySelectorAll('#settingsLogoutBtn');
+    logoutBtns.forEach(btn => {
+        btn.addEventListener('click', showLogoutPopup);
+    });
     
     // Error home button
     if (elements.errorHomeBtn) {
         elements.errorHomeBtn.addEventListener('click', () => switchView('home'));
     }
     
-    // Language select
-    if (elements.languageSelect) {
-        elements.languageSelect.value = appState.language;
-        elements.languageSelect.addEventListener('change', function() {
-            appState.language = this.value;
-            localStorage.setItem('language', this.value);
-        });
-    }
-    
     // Message items
-    if (elements.messageItems) {
-        elements.messageItems.forEach(item => {
-            item.addEventListener('click', function() {
-                const userType = this.getAttribute('data-user');
-                if (userType === 'ai') openAIChat();
-                else if (userType === 'support') openHelpCenter();
-            });
+    const messageItems = document.querySelectorAll('.message-item');
+    messageItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const userType = this.getAttribute('data-user');
+            if (userType === 'ai') openAIChat();
+            else if (userType === 'support') openHelpCenter();
         });
-    }
+    });
     
-    // Click listeners for stories and pages
+    // Click listeners
     document.addEventListener('click', (e) => {
         // Stories
         if (e.target.closest('.story-item')) {
@@ -811,15 +928,11 @@ function setupEventListeners() {
         appState.isMobile = window.innerWidth <= 1024;
         updateBottomNavVisibility();
     });
-    
-    console.log('✅ Event listeners setup complete');
 }
 
 // ========== App Initialization ==========
 
 function initializeApp() {
-    console.log('🚀 Initializing UltraSpace App...');
-    
     // Initialize DOM elements
     initializeDOMElements();
     
@@ -830,10 +943,8 @@ function initializeApp() {
     const isAuthenticated = checkBYPROAuthentication();
     
     if (isAuthenticated) {
-        console.log('✅ Starting main app...');
         startMainApp();
     } else {
-        console.log('🔐 Showing auth screen...');
         showAuthScreen();
     }
 }
@@ -859,8 +970,6 @@ function startMainApp() {
     
     // Start with home view
     switchView('home');
-    
-    console.log('🎉 Main app started successfully');
 }
 
 function showAuthScreen() {
@@ -869,8 +978,6 @@ function showAuthScreen() {
     
     // Create auth view
     createAuthView();
-    
-    console.log('🔐 Auth screen shown');
 }
 
 function hideLoadingScreen() {
@@ -887,15 +994,13 @@ function hideLoadingScreen() {
 // ========== Start Application ==========
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM loaded, starting app...');
-    
     // Small delay to ensure all elements are loaded
     setTimeout(() => {
         initializeApp();
     }, 100);
 });
 
-// Global functions for HTML onclick attributes
+// Global functions
 window.openAIChat = openAIChat;
 window.openProfile = openProfile;
 window.openYacine = openYacine;
@@ -915,5 +1020,3 @@ window.UltraSpace = {
     logout: showLogoutPopup,
     getAuthenticatedUser
 };
-
-console.log('🤖 UltraSpace Enhancer loaded successfully');
