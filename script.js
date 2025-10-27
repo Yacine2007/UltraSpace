@@ -299,6 +299,54 @@ function addCustomStyles() {
             display: block !important;
             opacity: 1 !important;
         }
+
+        /* إصلاحات للـ iframe */
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        /* إصلاح لواجهة المصادقة */
+        #authView {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100vh !important;
+            z-index: 10000 !important;
+            background: var(--background-color) !important;
+        }
+        
+        .auth-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .auth-iframe {
+            width: 100% !important;
+            height: 100vh !important;
+            border: none !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+
+        /* إصلاح لواجهة الصفحات الخارجية */
+        #externalPageView .iframe-container,
+        #aiChatView .iframe-container {
+            width: 100%;
+            height: calc(100vh - 120px);
+            position: relative;
+        }
     `;
     
     const styleSheet = document.createElement('style');
@@ -367,32 +415,44 @@ function createAuthView() {
     const mainContent = document.querySelector('.main-content');
     if (!mainContent) {
         console.error('❌ لم يتم العثور على main-content');
-        return;
+        // إنشاء main-content إذا لم يكن موجوداً
+        const appContainer = document.getElementById('appContainer');
+        if (appContainer) {
+            const newMainContent = document.createElement('div');
+            newMainContent.className = 'main-content';
+            appContainer.appendChild(newMainContent);
+            mainContent = newMainContent;
+        } else {
+            console.error('❌ لم يتم العثور على appContainer أيضاً');
+            return;
+        }
     }
     
     // إخفاء جميع العناصر الأخرى أولاً
     hideAllUIElements();
     
     const authViewHTML = `
-        <div class="view active" id="authView" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10000; background: var(--background-color);">
-            <div class="view-content" style="height: 100vh; padding: 0; margin: 0;">
+        <div class="view active" id="authView">
+            <div class="view-content">
                 <div class="auth-container">
                     <iframe 
                         src="https://yacine2007.github.io/secure-auth-app/login.html" 
                         class="auth-iframe" 
                         id="authIframe"
-                        style="width: 100%; height: 100vh; border: none; position: fixed; top: 0; left: 0;"
+                        allow="camera; microphone; fullscreen"
                     ></iframe>
                 </div>
             </div>
         </div>
     `;
     
-    mainContent.insertAdjacentHTML('beforeend', authViewHTML);
+    mainContent.innerHTML = authViewHTML;
     views.auth = document.getElementById('authView');
     
     // إعداد مستمع للرسائل من iframe المصادقة
     setupAuthIframeListener();
+    
+    console.log('✅ تم إنشاء واجهة المصادقة بنجاح');
 }
 
 /**
@@ -400,6 +460,11 @@ function createAuthView() {
  */
 function hideAllUIElements() {
     console.log('👻 إخفاء جميع عناصر واجهة المستخدم');
+    
+    // إخفاء التطبيق الرئيسي
+    if (elements.appContainer) {
+        elements.appContainer.style.display = 'none';
+    }
     
     // إخفاء الشريط الجانبي إذا كان موجوداً
     const sidebar = document.querySelector('.sidebar');
@@ -450,27 +515,31 @@ function showAllUIElements() {
  * إعداد مستمع لرسائل iframe المصادقة
  */
 function setupAuthIframeListener() {
-    window.addEventListener('message', function(event) {
+    function handleAuthMessage(event) {
         // التحقق من مصدر الرسالة
         const allowedOrigins = [
             'https://yacine2007.github.io',
             window.location.origin,
-            'https://ultraspace.wuaze.com'
+            'https://ultraspace.wuaze.com',
+            'http://localhost:3000',
+            'http://127.0.0.1:3000'
         ];
         
-        if (!allowedOrigins.includes(event.origin)) {
+        if (!allowedOrigins.some(origin => event.origin.startsWith(origin))) {
             console.warn('⚠️ رسالة من مصدر غير مصرح به:', event.origin);
             return;
         }
         
         console.log('📨 تم استلام رسالة من iframe المصادقة:', event.data);
         
-        // إذا كانت هناك بيانات مستخدم (من خلال localStorage)
+        // إذا كانت هناك بيانات مستخدم
         if (event.data && event.data.type === 'USER_AUTHENTICATED') {
             console.log('🔑 تم استلام رسالة مصادقة المستخدم');
             handleSuccessfulAuth();
         }
-    });
+    }
+    
+    window.addEventListener('message', handleAuthMessage);
     
     // فحص دوري مكثف لحالة المصادقة
     const checkAuthInterval = setInterval(() => {
@@ -478,10 +547,8 @@ function setupAuthIframeListener() {
             console.log('🔄 الفحص الدوري: المستخدم مصادق');
             handleSuccessfulAuth();
             clearInterval(checkAuthInterval);
-        } else {
-            console.log('🔄 الفحص الدوري: المستخدم غير مصادق بعد');
         }
-    }, 500);
+    }, 1000);
     
     // إيقاف الفحص بعد 5 دقائق
     setTimeout(() => {
@@ -753,6 +820,180 @@ function logout() {
     }
 }
 
+// ========== إدارة الـ iframes ==========
+
+/**
+ * إعداد أبعاد الـ iframe
+ */
+function setupIframeDimensions(iframe) {
+    if (!iframe) return;
+    
+    const isMobile = appState.isMobile;
+    
+    if (isMobile) {
+        // للهواتف: ارتفاع كامل الشاشة مع مراعاة الهيدر
+        const headerHeight = document.querySelector('.header')?.offsetHeight || 60;
+        const viewportHeight = window.innerHeight;
+        const availableHeight = viewportHeight - headerHeight;
+        
+        iframe.style.height = availableHeight + 'px';
+        iframe.style.minHeight = availableHeight + 'px';
+    } else {
+        // للحواسيب: ارتفاع متكيف
+        const viewportHeight = window.innerHeight;
+        const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
+        const availableHeight = viewportHeight - headerHeight;
+        
+        iframe.style.height = availableHeight + 'px';
+        iframe.style.minHeight = '600px';
+    }
+    
+    iframe.style.maxHeight = 'none';
+    iframe.style.border = 'none';
+    iframe.style.borderRadius = '0';
+    iframe.style.width = '100%';
+}
+
+/**
+ * إعداد مستمع لرسائل الـ iframe
+ */
+function setupIframeMessageListener() {
+    window.addEventListener('message', function(event) {
+        // تحقق من مصدر الرسالة لأسباب أمنية
+        const allowedOrigins = [
+            'https://yacine2007.github.io',
+            window.location.origin,
+            'https://ultraspace.wuaze.com',
+            'http://localhost:3000',
+            'http://127.0.0.1:3000'
+        ];
+        
+        let originAllowed = false;
+        for (const allowedOrigin of allowedOrigins) {
+            if (event.origin === allowedOrigin || event.origin.startsWith(allowedOrigin)) {
+                originAllowed = true;
+                break;
+            }
+        }
+        
+        if (!originAllowed) {
+            console.warn('⚠️ رسالة من مصدر غير مصرح به:', event.origin);
+            return;
+        }
+        
+        // معالجة أنواع الرسائل المختلفة
+        if (event.data && event.data.type === 'POST_LOADED') {
+            console.log('✅ تم تحميل المنشور في iframe:', event.data.postId);
+        }
+        
+        if (event.data && event.data.type === 'SHARE_LINK_REQUEST') {
+            const postId = event.data.postId;
+            const shareLink = generatePostShareLink(postId);
+            
+            event.source.postMessage({
+                type: 'SHARE_LINK_RESPONSE',
+                shareLink: shareLink
+            }, event.origin);
+        }
+        
+        if (event.data && event.data.type === 'OPEN_EXTERNAL_URL') {
+            const url = event.data.url;
+            window.open(url, '_blank');
+        }
+        
+        if (event.data && event.data.type === 'RESIZE_IFRAME') {
+            const height = event.data.height;
+            resizeIframe(height);
+        }
+    });
+}
+
+/**
+ * تحميل الصفحات الخارجية
+ */
+async function loadExternalPage(url, title = 'Page') {
+    // إذا لم يكن المستخدم مصادقاً، لا تسمح بتحميل الصفحات
+    if (!appState.isAuthenticated) {
+        console.log('🚫 المستخدم غير مصادق، لا يمكن تحميل الصفحات');
+        return false;
+    }
+    
+    console.log(`🌐 جاري تحميل الصفحة الخارجية: ${url}`);
+    
+    try {
+        if (elements.externalIframe) {
+            // إعداد الـ iframe للتحميل
+            elements.externalIframe.style.opacity = '0';
+            elements.externalIframe.style.transition = 'opacity 0.3s ease';
+            
+            // تعيين المصدر
+            elements.externalIframe.src = url;
+            viewTitles.externalPage = title;
+            
+            // معالجة التحميل الناجح
+            elements.externalIframe.onload = function() {
+                console.log('✅ تم تحميل الصفحة الخارجية بنجاح');
+                this.style.opacity = '1';
+                setupIframeDimensions(this);
+                
+                // إرسال رسالة إذا كان هناك منشور مطلوب
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('post');
+                
+                if (postId && url.includes('Yacine') && this.contentWindow) {
+                    setTimeout(() => {
+                        this.contentWindow.postMessage({
+                            type: 'SHOW_POST',
+                            postId: postId
+                        }, '*');
+                        console.log('📨 تم إرسال رسالة عرض المنشور:', postId);
+                    }, 1000);
+                }
+            };
+            
+            // معالجة الأخطاء
+            elements.externalIframe.onerror = function() {
+                console.error('❌ فشل تحميل الصفحة الخارجية:', url);
+                this.style.opacity = '1';
+                switchView('error');
+            };
+        }
+        
+        // التبديل إلى واجهة الصفحة الخارجية
+        switchView('externalPage');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ خطأ في تحميل الصفحة الخارجية:', error);
+        switchView('error');
+        return false;
+    }
+}
+
+/**
+ * فتح الدردشة AI
+ */
+function openAIChat() {
+    console.log('🤖 فتح الدردشة AI...');
+    loadExternalPage('Ai/AI.html', 'UltraSpace AI');
+}
+
+/**
+ * فتح صفحة Yacine
+ */
+function openYacine() {
+    console.log('📖 فتح صفحة Yacine...');
+    loadExternalPage('Yacine/index.html', 'Yacine');
+}
+
+/**
+ * فتح الملف الشخصي
+ */
+function openProfile() {
+    console.log('👤 فتح الملف الشخصي...');
+    loadExternalPage('Profile/Profile.html', 'Edit Profile');
+}
+
 // ========== إدارة الواجهات والتنقل ==========
 
 /**
@@ -907,6 +1148,9 @@ function initializeApp() {
     // إضافة الأنماط المخصصة
     addCustomStyles();
     
+    // إعداد مستمع رسائل الـ iframe
+    setupIframeMessageListener();
+    
     // التحقق من المصادقة
     const isAuthenticated = checkBYPROAuthentication();
     
@@ -994,7 +1238,55 @@ function setupEventListeners() {
         });
     }
     
+    // إعداد النقر على القصص والصفحات
+    setupClickListeners();
+    
     console.log('✅ تم إعداد جميع مستمعي الأحداث');
+}
+
+/**
+ * إعداد مستمعي النقر للقصص والصفحات
+ */
+function setupClickListeners() {
+    // النقر على القصص
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.story-item')) {
+            const storyItem = e.target.closest('.story-item');
+            const storyName = storyItem.querySelector('.story-name')?.textContent;
+            
+            if (storyName === 'Yacine') {
+                openYacine();
+            }
+        }
+        
+        // النقر على الصفحات المقترحة
+        if (e.target.closest('.page-item')) {
+            const pageItem = e.target.closest('.page-item');
+            const pageName = pageItem.querySelector('.page-name')?.textContent;
+            const pageUrl = pageItem.getAttribute('data-page-url');
+            
+            if (pageUrl) {
+                loadExternalPage(pageUrl, pageName);
+            } else if (pageName === 'Yacine') {
+                openYacine();
+            }
+        }
+        
+        // النقر على عناصر الإعدادات
+        if (e.target.closest('.settings-item[data-page]')) {
+            const settingsItem = e.target.closest('.settings-item[data-page]');
+            const pageUrl = settingsItem.getAttribute('data-page');
+            const pageTitle = settingsItem.querySelector('span')?.textContent;
+            
+            if (pageUrl === 'Ai/AI.html') {
+                openAIChat();
+            } else if (pageUrl === 'Profile/Profile.html') {
+                openProfile();
+            } else {
+                loadExternalPage(pageUrl, pageTitle);
+            }
+        }
+    });
 }
 
 /**
@@ -1004,17 +1296,11 @@ function hideLoadingScreen() {
     if (elements.loadingScreen) {
         elements.loadingScreen.style.opacity = '0';
         setTimeout(() => {
-            elements.loadingScreen.style.display = 'none';
+            if (elements.loadingScreen.parentNode) {
+                elements.loadingScreen.parentNode.removeChild(elements.loadingScreen);
+            }
         }, 500);
     }
-}
-
-/**
- * فتح الملف الشخصي
- */
-function openProfile() {
-    console.log('👤 فتح الملف الشخصي...');
-    switchView('settings');
 }
 
 // ========== بدء التطبيق ==========
