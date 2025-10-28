@@ -86,10 +86,7 @@ function createMissingViews() {
         <div class="view active" id="homeView">
             <div class="view-content">
                 <div class="header" id="homeHeader">
-                    <div class="search-bar">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search...">
-                    </div>
+                    <!-- Search bar with profile will be added here by JavaScript -->
                 </div>
                 <div class="stories-section">
                     <div class="story-item">
@@ -288,6 +285,25 @@ function addCustomStyles() {
         .search-container {
             flex: 1;
             position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--input-background);
+            border-radius: 20px;
+            padding: 8px 15px;
+            gap: 10px;
+        }
+        
+        .search-container i {
+            color: var(--text-muted);
+        }
+        
+        .search-container input {
+            border: none;
+            background: none;
+            outline: none;
+            width: 100%;
+            color: var(--text-color);
+            font-size: 14px;
         }
         
         .avatar-mini {
@@ -446,8 +462,9 @@ function addCustomStyles() {
         
         /* Mobile responsive for iframes */
         @media (max-width: 1024px) {
-            .iframe-container {
-                height: 100vh !important;
+            #aiChatView .iframe-container,
+            #externalPageView .iframe-container {
+                height: calc(100vh - 60px) !important;
             }
             
             .ai-iframe,
@@ -458,25 +475,17 @@ function addCustomStyles() {
             #aiChatView .header,
             #externalPageView .header {
                 display: flex !important;
-                position: fixed;
-                top: 0;
-                left: 0;
+                position: relative;
                 width: 100%;
-                z-index: 1000;
                 background: var(--background-color);
-            }
-            
-            #aiChatView .iframe-container,
-            #externalPageView .iframe-container {
-                margin-top: 60px;
-                height: calc(100vh - 60px) !important;
             }
         }
         
         /* Desktop responsive for iframes */
         @media (min-width: 1025px) {
-            .iframe-container {
-                height: 100vh !important;
+            #aiChatView .iframe-container,
+            #externalPageView .iframe-container {
+                height: calc(100vh - 60px) !important;
             }
             
             .ai-iframe,
@@ -487,11 +496,6 @@ function addCustomStyles() {
             #aiChatView .header,
             #externalPageView .header {
                 display: flex !important;
-            }
-            
-            #aiChatView .iframe-container,
-            #externalPageView .iframe-container {
-                height: calc(100vh - 60px) !important;
             }
         }
 
@@ -526,26 +530,7 @@ function addCustomStyles() {
             font-size: 1.2rem;
             flex: 1;
             text-align: center;
-        }
-
-        /* Search bar */
-        .search-bar {
-            flex: 1;
-            position: relative;
-            display: flex;
-            align-items: center;
-            background: var(--input-background);
-            border-radius: 20px;
-            padding: 8px 15px;
-            gap: 10px;
-        }
-
-        .search-bar input {
-            border: none;
-            background: none;
-            outline: none;
-            width: 100%;
-            color: var(--text-color);
+            margin: 0;
         }
 
         /* View content adjustments */
@@ -574,6 +559,10 @@ function addCustomStyles() {
             .back-btn-circle {
                 width: 36px;
                 height: 36px;
+            }
+            
+            .search-bar-enhanced {
+                padding: 0 10px;
             }
         }
     `;
@@ -756,16 +745,10 @@ function updateHeaderVisibility() {
         // Show home header with search and profile
         homeHeaders.forEach(header => {
             header.style.display = 'flex';
-            updateHomeHeader(header);
-        });
-    } else if (appState.currentView === 'aiChat' || appState.currentView === 'externalPage') {
-        // Show view header for iframe pages
-        viewHeaders.forEach(header => {
-            header.style.display = 'flex';
-            updateViewHeader(header);
+            createHomeHeader(header);
         });
     } else {
-        // Show view header for other pages
+        // Show view header for other pages (including iframe pages)
         viewHeaders.forEach(header => {
             header.style.display = 'flex';
             updateViewHeader(header);
@@ -773,41 +756,44 @@ function updateHeaderVisibility() {
     }
 }
 
-function updateHomeHeader(header) {
+function createHomeHeader(header) {
     if (!header) return;
     
-    let searchBar = header.querySelector('.search-bar');
-    if (searchBar && !searchBar.classList.contains('enhanced')) {
-        const user = getAuthenticatedUser();
-        const avatarUrl = appState.userAvatarUrl || (user ? user.image : '');
-        
-        const enhancedHTML = `
-            <div class="search-bar-enhanced">
-                <div class="search-container">
-                    ${searchBar.innerHTML}
-                </div>
-                <img src="${avatarUrl || getDefaultAvatarUrl(user)}" 
-                     alt="Profile" 
-                     class="avatar-mini"
-                     onerror="this.src='${getDefaultAvatarUrl(user)}'"
-                     onclick="openProfile()">
+    // Clear existing content
+    header.innerHTML = '';
+    
+    const user = getAuthenticatedUser();
+    const avatarUrl = appState.userAvatarUrl || (user ? user.image : '');
+    
+    const searchBarHTML = `
+        <div class="search-bar-enhanced">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search..." class="search-input">
             </div>
-        `;
-        
-        searchBar.outerHTML = enhancedHTML;
-    }
+            <img src="${avatarUrl || getDefaultAvatarUrl(user)}" 
+                 alt="Profile" 
+                 class="avatar-mini"
+                 onerror="this.src='${getDefaultAvatarUrl(user)}'"
+                 onclick="openProfile()">
+        </div>
+    `;
+    
+    header.innerHTML = searchBarHTML;
 }
 
 function updateViewHeader(header) {
     if (!header) return;
     
-    // Update back buttons
-    const backBtns = header.querySelectorAll('.back-btn-circle');
-    backBtns.forEach(btn => {
-        if (!btn.classList.contains('enhanced')) {
-            btn.classList.add('enhanced');
-        }
-    });
+    // Make sure header has the correct structure
+    if (!header.querySelector('.back-btn-circle')) {
+        header.innerHTML = `
+            <button class="back-btn-circle" id="backBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="header-title" id="viewTitle">${viewTitles[appState.currentView] || 'View'}</div>
+        `;
+    }
     
     // Update title
     updateViewTitle(appState.currentView);
@@ -989,10 +975,11 @@ function setupEventListeners() {
         });
     });
     
-    // Back buttons
-    const backBtns = document.querySelectorAll('#backBtn');
-    backBtns.forEach(btn => {
-        btn.addEventListener('click', goBack);
+    // Back buttons - use event delegation for dynamically created elements
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#backBtn') || e.target.closest('.back-btn-circle')) {
+            goBack();
+        }
     });
     
     // Logout button
@@ -1056,6 +1043,9 @@ function setupEventListeners() {
         if (appState.currentView === 'aiChat' || appState.currentView === 'externalPage') {
             setupIframeDimensions();
         }
+        
+        // Update headers
+        updateHeaderVisibility();
     });
 }
 
