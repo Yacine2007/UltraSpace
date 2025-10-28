@@ -1,13 +1,42 @@
 // App State
 const appState = {
     currentView: 'home',
-    language: localStorage.getItem('language') || 'en',
+    language: 'en',
     isLoading: false,
     viewHistory: ['home'],
     isAuthenticated: false,
-    userAvatarUrl: localStorage.getItem('ultraspace_user_avatar_url') || '',
+    userAvatarUrl: '',
     currentPostId: null,
     isMobile: window.innerWidth <= 1024
+};
+
+// Safe localStorage wrapper
+const safeStorage = {
+    getItem: (key) => {
+        try {
+            return localStorage.getItem(key);
+        } catch (error) {
+            console.warn('localStorage access denied, using session fallback');
+            return sessionStorage.getItem(key) || null;
+        }
+    },
+    
+    setItem: (key, value) => {
+        try {
+            localStorage.setItem(key, value);
+        } catch (error) {
+            console.warn('localStorage access denied, using session fallback');
+            sessionStorage.setItem(key, value);
+        }
+    },
+    
+    removeItem: (key) => {
+        try {
+            localStorage.removeItem(key);
+        } catch (error) {
+            sessionStorage.removeItem(key);
+        }
+    }
 };
 
 // DOM Elements
@@ -575,34 +604,40 @@ function addCustomStyles() {
 // ========== Authentication System ==========
 
 function checkBYPROAuthentication() {
-    const userData = localStorage.getItem('bypro_user');
-    
-    if (userData) {
-        try {
-            const user = JSON.parse(userData);
-            
-            if (user.id && user.password) {
-                appState.isAuthenticated = true;
+    try {
+        const userData = safeStorage.getItem('bypro_user');
+        
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
                 
-                if (user.image && user.image !== appState.userAvatarUrl) {
-                    appState.userAvatarUrl = user.image;
-                    localStorage.setItem('ultraspace_user_avatar_url', user.image);
+                if (user.id && user.password) {
+                    appState.isAuthenticated = true;
+                    
+                    if (user.image && user.image !== appState.userAvatarUrl) {
+                        appState.userAvatarUrl = user.image;
+                        safeStorage.setItem('ultraspace_user_avatar_url', user.image);
+                    }
+                    
+                    return true;
                 }
-                
-                return true;
+            } catch (error) {
+                // Error parsing user data
             }
-        } catch (error) {
-            // Error parsing user data
         }
+        
+        // Clear invalid data
+        safeStorage.removeItem('bypro_user');
+        safeStorage.removeItem('ultraspace_user_avatar_url');
+        appState.isAuthenticated = false;
+        appState.userAvatarUrl = '';
+        
+        return false;
+    } catch (error) {
+        console.warn('Authentication check failed:', error);
+        appState.isAuthenticated = false;
+        return false;
     }
-    
-    // Clear invalid data
-    localStorage.removeItem('bypro_user');
-    localStorage.removeItem('ultraspace_user_avatar_url');
-    appState.isAuthenticated = false;
-    appState.userAvatarUrl = '';
-    
-    return false;
 }
 
 function createAuthView() {
@@ -668,7 +703,7 @@ function handleSuccessfulAuth() {
     const user = getAuthenticatedUser();
     if (user && user.image) {
         appState.userAvatarUrl = user.image;
-        localStorage.setItem('ultraspace_user_avatar_url', user.image);
+        safeStorage.setItem('ultraspace_user_avatar_url', user.image);
     }
     
     // Remove auth view
@@ -684,11 +719,16 @@ function handleSuccessfulAuth() {
 }
 
 function getAuthenticatedUser() {
-    const userData = localStorage.getItem('bypro_user');
-    if (userData) {
-        return JSON.parse(userData);
+    try {
+        const userData = safeStorage.getItem('bypro_user');
+        if (userData) {
+            return JSON.parse(userData);
+        }
+        return null;
+    } catch (error) {
+        console.warn('Failed to get authenticated user:', error);
+        return null;
     }
-    return null;
 }
 
 // ========== View Management ==========
@@ -922,8 +962,8 @@ function closePopup() {
 }
 
 function confirmLogout() {
-    localStorage.removeItem('bypro_user');
-    localStorage.removeItem('ultraspace_user_avatar_url');
+    safeStorage.removeItem('bypro_user');
+    safeStorage.removeItem('ultraspace_user_avatar_url');
     appState.isAuthenticated = false;
     appState.userAvatarUrl = '';
     
@@ -1052,19 +1092,29 @@ function setupEventListeners() {
 // ========== App Initialization ==========
 
 function initializeApp() {
-    // Initialize DOM elements
-    initializeDOMElements();
-    
-    // Add custom styles
-    addCustomStyles();
-    
-    // Check authentication
-    const isAuthenticated = checkBYPROAuthentication();
-    
-    if (isAuthenticated) {
-        startMainApp();
-    } else {
-        showAuthScreen();
+    try {
+        // Initialize DOM elements
+        initializeDOMElements();
+        
+        // Add custom styles
+        addCustomStyles();
+        
+        // Check authentication
+        const isAuthenticated = checkBYPROAuthentication();
+        
+        if (isAuthenticated) {
+            startMainApp();
+        } else {
+            showAuthScreen();
+        }
+    } catch (error) {
+        console.error('App initialization failed:', error);
+        // Fallback: show main app anyway
+        hideLoadingScreen();
+        if (elements.appContainer) {
+            elements.appContainer.style.display = 'block';
+        }
+        switchView('home');
     }
 }
 
